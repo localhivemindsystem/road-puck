@@ -132,8 +132,14 @@ Run `node tools/test_engine.js` to check the rules against real Lambeth position
 - **RingGo car parks** (8) come from the [RingGo parking locator](https://myringgo.co.uk/parkinglocator), checked
   29 Sep 2026 and kept by hand in `data/lambeth/ringgo_car_parks.json`. In Lambeth RingGo is used by private,
   off-street car parks (ParkBee, APCOA, the National Theatre, Sainsbury's Streatham Common), not council street bays.
-  The list came from name searches (the locator's area search is behind a bot check), so it may miss some: add a site
-  to that file and rebuild. When parked, a nearby RingGo car park is offered **alongside** the street rule, never
+  Also in Lambeth: Angell Town Estate (Brixton), Waltham Estates and Begbie House (Stockwell) and Parkhall Business
+  Centre (West Norwood). A car park can carry charging hours: outside them the app says **CHECK THE SIGNS** (an estate
+  car park may be residents only) unless RingGo lists that day as free. The list may miss some: add a site to that
+  file and rebuild.
+- **Wandsworth street bays** next door are sold through **RingGo**, not PayByPhone. The 12 bays near the Lambeth border
+  that came up in a South London search (Battersea B8 and Balham 1) are in `data/lambeth/ringgo_street_bays.json`
+  with their hours, maximum stay and £3.70/h, so parking on Thessaly Road shows `PAY` / `RINGGO 11737`. Times RingGo
+  lists as neither charged nor free (Balham 1 on Friday evenings) show CHECK THE SIGNS. When parked, a nearby RingGo car park is offered **alongside** the street rule, never
   instead of it, so a car on the street outside isn't told to pay the car park. Only where there's no street rule on
   the map does the car park become the main answer (puck: `CAR PARK` / `PAY` / `RINGGO 39079`).
 - **No-entry restrictions** come from OpenStreetMap and are **not yet checked on the ground**: alerts say

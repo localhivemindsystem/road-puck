@@ -28,6 +28,7 @@ Inputs
   tools/source/tfl_yellow_boxes_raw.geojson TfL yellow box junctions (TfL_Yellow_box_junctions/FeatureServer/4)
   data/lambeth/parking_apps.json           which app pays for street bays and car parks, and how to open each app
   data/lambeth/ringgo_car_parks.json       RingGo car parks in Lambeth, copied by hand from the RingGo parking locator
+  data/lambeth/ringgo_street_bays.json     Wandsworth street bays paid with RingGo, near the Lambeth border (same source)
   data/lambeth/restriction_checks.json     your on-the-ground checks: {"osm way id": {"verified": true, "note": ""}}
   tools/source/tfl_bus_lanes_raw.geojson
       TfL's "Bus Lanes" open data layer (services1.arcgis.com/YswvgzOodUvqkoCN/.../Bus_Lanes/FeatureServer/0),
@@ -122,14 +123,31 @@ def build_pay_by_phone():
                 "tariff": a["TARIFF"],
                 "machine": a["MACHINE"] == "Y",
                 "on_street": a["ON_OFF_STR"] in ("On", "On-Street"),
+                "app": "paybyphone",
+                "borough": "Lambeth",
                 "source": PBP_URL,
             },
         })
-    fc = {"type": "FeatureCollection", "name": "Lambeth pay-by-phone locations", "features": feats}
+    n_lambeth = len(feats)
+    # neighbouring councils' street bays sold through RingGo (hand-copied from the RingGo locator)
+    rg = json.loads((ROOT / "data" / "lambeth" / "ringgo_street_bays.json").read_text())
+    for b in rg["bays"]:
+        feats.append({
+            "type": "Feature",
+            "geometry": {"type": "Point", "coordinates": [b["lng"], b["lat"]]},
+            "properties": {
+                "code": b["code"], "street": b["street"], "zone": b["zone"], "hours": b["hours"], "days": b["days"],
+                "max_stay_h": b["max_stay_h"], "tariff": b["tariff"], "machine": False, "on_street": True,
+                "app": "ringgo", "borough": b["borough"], "source": rg["source"], "checked": rg["checked"],
+                **({"note": b["note"]} if b.get("note") else {}),
+                **({"check_hours": b["check_hours"]} if b.get("check_hours") else {}),
+            },
+        })
+    fc = {"type": "FeatureCollection", "name": "Pay-by-phone street parking locations", "features": feats}
     out = ROOT / "data" / "lambeth" / "pay_by_phone.geojson"
     out.write_text(json.dumps(fc, indent=1))
     (WEB / "pay_by_phone.geojson").write_text(json.dumps(fc, separators=(",", ":")))
-    print(f"{len(feats)} pay-by-phone locations")
+    print(f"{n_lambeth} Lambeth pay-by-phone locations + {len(feats) - n_lambeth} RingGo street bays next door")
 
 
 def build_car_parks():
@@ -143,6 +161,7 @@ def build_car_parks():
                 "code": str(s["code"]), "app": "ringgo", "name": s["name"], "operator": s.get("operator", ""),
                 "area": s.get("area", ""), "max_stay": s.get("max_stay", ""), "price": s.get("price", ""),
                 "note": s.get("note", ""), "info_url": s.get("info_url", ""),
+                **({"hours": s["hours"], "days": s["days"], "free_days": s.get("free_days", "")} if s.get("hours") else {}),
                 "kind": "car park", "source": src["source"], "checked": src["checked"],
             },
         })

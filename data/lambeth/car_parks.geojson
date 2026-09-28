@@ -193,6 +193,105 @@
     "source": "https://myringgo.co.uk/parkinglocator",
     "checked": "2026-09-29"
    }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.10757,
+     51.46822
+    ]
+   },
+   "properties": {
+    "code": "40000",
+    "app": "ringgo",
+    "name": "Angell Town Estate car park",
+    "operator": "",
+    "area": "Brixton",
+    "max_stay": "3 hours",
+    "price": "\u00a33.40 for up to 3 h. No return within 7 h",
+    "note": "RingGo sells Mon-Fri 08:00-12:00 and 13:00-20:00, Sat 08:00-13:00; free Sundays and bank holidays. Check the signs for 12:00-13:00.",
+    "info_url": "",
+    "hours": "08:00-20:00,Sa 08:00-13:00",
+    "days": "Monday - Friday",
+    "free_days": "Su",
+    "kind": "car park",
+    "source": "https://myringgo.co.uk/parkinglocator",
+    "checked": "2026-09-29"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.11763,
+     51.46961
+    ]
+   },
+   "properties": {
+    "code": "21695",
+    "app": "ringgo",
+    "name": "Waltham Estates car park",
+    "operator": "",
+    "area": "Stockwell",
+    "max_stay": "24 hours",
+    "price": "\u00a31 for 30 min, \u00a32 an hour, \u00a34.50 all day",
+    "note": "Check the car park signs for Blue Badge and motorcycle bays.",
+    "info_url": "",
+    "kind": "car park",
+    "source": "https://myringgo.co.uk/parkinglocator",
+    "checked": "2026-09-29"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.11865,
+     51.47047
+    ]
+   },
+   "properties": {
+    "code": "21696",
+    "app": "ringgo",
+    "name": "Begbie House car park",
+    "operator": "",
+    "area": "Stockwell",
+    "max_stay": "24 hours",
+    "price": "\u00a31 for 30 min, \u00a32 an hour, \u00a34.50 all day",
+    "note": "Check the car park signs for Blue Badge and motorcycle bays.",
+    "info_url": "",
+    "kind": "car park",
+    "source": "https://myringgo.co.uk/parkinglocator",
+    "checked": "2026-09-29"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.09446,
+     51.43355
+    ]
+   },
+   "properties": {
+    "code": "801256",
+    "app": "ringgo",
+    "name": "Parkhall Business Centre car park",
+    "operator": "",
+    "area": "West Norwood",
+    "max_stay": "24 hours",
+    "price": "\u00a35 up to 2 h, \u00a37 4 h, \u00a310 all day (to midnight)",
+    "note": "",
+    "info_url": "",
+    "kind": "car park",
+    "source": "https://myringgo.co.uk/parkinglocator",
+    "checked": "2026-09-29"
+   }
   }
  ]
 }

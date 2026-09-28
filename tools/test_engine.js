@@ -296,6 +296,22 @@ console.log('\nParking apps');
   check('150 m from Ferndale Road car park in zone B, Mon 10:00 -> PERMIT and the car park suggested',
     (fr.word === 'PERMIT' || fr.word === 'RESIDENTS' || fr.word === 'PAY') && fr.alt && fr.alt.code === '38925',
     `${fr.word} | ${fr.road} | alt ${fr.alt && fr.alt.code} (${fr.alt && Math.round(fr.alt.carPark.d)} m)\n      ${fr.instr}`);
+  // Wandsworth street bays next door: RingGo, not PayByPhone
+  const at = (lat, lng, clk) => { const m = E.toM(lng, lat); return E.evaluate([], { x: m[0], y: m[1], acc: 8, speed: 0 }, clk, { zones, pbp, cps, apps, parked: true }); };
+  const th = at(51.47597, -0.13709, MON('10:00'));
+  check('Thessaly Road (Wandsworth B8), Mon 10:00 -> PAY, RingGo 11737, until 18:30', th.word === 'PAY' && th.pay.app.name === 'RingGo' && th.road === 'RINGGO 11737' && th.detail.includes('18:30'), `${th.road} | ${th.detail}\n      puck: ${E.puckMessage(th)}`);
+  const thSun = at(51.47597, -0.13709, { day: 0, min: 600, term: true });
+  check('Thessaly Road, Sunday -> FREE until Mon 08:30', thSun.st === 'F' && thSun.detail === 'FREE UNTIL MON 08:30', thSun.detail);
+  const gk = at(51.45028, -0.14287, { day: 5, min: 1100, term: true });
+  check('Gaskarth Road, Fri 18:20 (RingGo lists nothing) -> CHECK THE SIGNS', gk.word === 'CHECK' && gk.detail === 'CHECK THE SIGNS', gk.instr);
+  const gk2 = at(51.45028, -0.14287, { day: 4, min: 1100, term: true });
+  check('Gaskarth Road, Thu 18:20 -> FREE', gk2.st === 'F', gk2.detail);
+  // Angell Town Estate car park: charged hours, free Sundays, unknown evenings
+  const an = t => at(51.46822, -0.10757, t);
+  const a1 = an(MON('10:00')), a2 = an({ day: 0, min: 600, term: true }), a3 = an(MON('20:30'));
+  check('Angell Town Estate car park, Mon 10:00 -> PAY until 20:00, max 3 h', a1.kind === 'CAR PARK' && a1.word === 'PAY' && a1.detail === 'PAY UNTIL 20:00 - MAX 3 H', `${a1.detail}\n      puck: ${E.puckMessage(a1)}`);
+  check('Angell Town, Sunday -> FREE (RingGo lists Sundays free)', a2.st === 'F' && a2.kind === 'CAR PARK', a2.detail);
+  check('Angell Town, Mon 20:30 -> CHECK THE SIGNS, not FREE (may be residents only)', a3.word === 'CHECK', a3.instr);
   const msg = E.puckMessage(kp).split('|');
   check('Puck message for a car park has 10 fields and word PAY', msg.length === 10 && msg[1] === 'P' && msg[7] === 'PAY', E.puckMessage(kp));
 }

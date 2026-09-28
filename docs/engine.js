@@ -361,11 +361,13 @@
     return m ? `\u00a3${Number(m[1]).toFixed(2).replace(/\.00$/, '')}/H` : '';
   }
   function loadPayByPhone(geojson) {
-    return geojson.features.map(f => ({ ...f.properties, m: toM(f.geometry.coordinates[0], f.geometry.coordinates[1]), rules: parsePayHours(f.properties.hours, f.properties.days) }));
+    return geojson.features.map(f => ({ ...f.properties, m: toM(f.geometry.coordinates[0], f.geometry.coordinates[1]), rules: parsePayHours(f.properties.hours, f.properties.days),
+      checkRules: f.properties.check_hours ? parsePayHours(f.properties.check_hours, 'Monday - Sunday') : null }));
   }
   // App-paid car parks (RingGo locator): off-street, so never shown as the street's rule.
   function loadCarParks(geojson) {
-    return geojson.features.map(f => ({ ...f.properties, m: toM(f.geometry.coordinates[0], f.geometry.coordinates[1]) }));
+    return geojson.features.map(f => ({ ...f.properties, m: toM(f.geometry.coordinates[0], f.geometry.coordinates[1]), rules: f.properties.hours ? parsePayHours(f.properties.hours, f.properties.days) : null,
+      freeDays: String(f.properties.free_days || '').split(/[\s,]+/).map(d => OSM_DAY[d]).filter(d => d != null) }));
   }
   // Which app pays for a place: apps file {on_street, apps:{key:{name,...}}}; older single-app files still work.
   function appFor(apps, key) {
@@ -728,15 +730,20 @@
       const edge = pk.z && pk.edge < 40 + acc ? ' Near a zone boundary: check the signs.' : '';
       const appOf = pt => appFor(apps, pt.app);
       const codeLine = pt => `${appOf(pt).name} ${pt.code}`.toUpperCase();
-      const payInfo = pt => `${appOf(pt).name} location ${pt.code} (${pt.street}${pt.d > 45 ? `, ${Math.round(pt.d)} m away` : ''}${pt.max_stay_h ? `, max ${pt.max_stay_h} h` : ''}${priceText(pt.tariff) ? `, ${priceText(pt.tariff).toLowerCase()} in council data` : ''})`;
+      const payInfo = pt => `${appOf(pt).name} location ${pt.code} (${pt.street}${pt.d > 45 ? `, ${Math.round(pt.d)} m away` : ''}${pt.max_stay_h ? `, max ${pt.max_stay_h} h` : ''}${priceText(pt.tariff) ? `, ${priceText(pt.tariff).toLowerCase()} in ${pt.app === 'ringgo' ? 'RingGo' : 'council'} data` : ''}${pt.borough && pt.borough !== 'Lambeth' ? `, ${pt.borough} Council` : ''})`;
       const cpInfo = cp => `${cp.name} (${appOf(cp).name} ${cp.code}${cp.d > 30 ? `, ${Math.round(cp.d / 10) * 10} m away` : ''})`;
       const pay = pt => pt ? { app: appOf(pt), code: pt.code, street: pt.street } : null;
       const carPay = cp => cp ? { app: appOf(cp), code: cp.code, street: cp.name, carPark: cp } : null;
+      if (here && here.checkRules && payStatus({ rules: here.checkRules }, clock).k === 'pay') return mk('P', {
+        ...extra, kind: 'PARKING', word: 'CHECK', road: codeLine(here), roadShort: codeLine(here),
+        detail: 'CHECK THE SIGNS', puckDetail: 'CHECK THE SIGNS',
+        instr: `${here.note || 'Check the signs.'} ${payInfo(here)}.`, park: pk, pbp: here, pay: pay(here),
+      });
       if (here && ps.k === 'pay') return mk('P', {
         ...extra, kind: 'PARKING', word: 'PAY', road: codeLine(here), roadShort: codeLine(here),
         detail: `PAY UNTIL ${fmt(ps.until)}${here.max_stay_h ? ` - MAX ${here.max_stay_h} H` : ''}${priceText(here.tariff) ? ` - ${priceText(here.tariff)}` : ''}`,
         puckDetail: `${here.max_stay_h ? `MAX ${here.max_stay_h} H - ` : ''}TIL ${fmt(ps.until)}`,
-        instr: `Pay to park: ${payInfo(here)}. Resident permit holders can use permit bays.${cpNear ? ` In the car park instead? ${cpInfo(cpNear)}.` : ''}${edge}`,
+        instr: `Pay to park: ${payInfo(here)}. Resident permit holders can use permit bays.${here.note ? ` ${here.note}` : ''}${cpNear ? ` In the car park instead? ${cpInfo(cpNear)}.` : ''}${edge}`,
         park: pk, pbp: here, pay: pay(here), alt: carPay(cpNear),
       });
       if (pk.k === 'controlled') return mk('P', {
@@ -751,13 +758,36 @@
         return mk('F', {
           ...extra, kind: 'PARKING', word: 'FREE', road: zoneLine || codeLine(here), roadShort: zoneLine || codeLine(here),
           detail: `FREE ${until}`, puckDetail: until,
-          instr: `Bays and single yellow lines are free now. Double yellows, red routes and bay signs still apply.${here ? ` Pay from then with ${payInfo(here)}.` : ''}${cpNear ? ` Car parks charge their own hours: ${cpInfo(cpNear)}.` : ''}${edge}`,
+          instr: `Bays and single yellow lines are free now. Double yellows, red routes and bay signs still apply.${here ? ` Pay from then with ${payInfo(here)}.${here.note ? ` ${here.note}` : ''}` : ''}${cpNear ? ` Car parks charge their own hours: ${cpInfo(cpNear)}.` : ''}${edge}`,
           park: pk, pbp: here || nearby, pay: pay(here || nearby), alt: carPay(cpNear),
         });
       }
       // no street rule known here, but you're at an app-paid car park
       if (cpIn) {
-        const ms = cpIn.max_stay ? `MAX ${cpIn.max_stay.toUpperCase()}` : '';
+        const ms = cpIn.max_stay ? `MAX ${cpIn.max_stay.toUpperCase().replace(/ HOURS?$/, ' H')}` : '';
+        const cs = cpIn.rules && cpIn.rules.ok ? payStatus(cpIn, clock) : null;
+        if (cs && cs.k === 'free' && cpIn.freeDays.includes(clock.day)) {
+          const until = cs.from ? (cs.from.today ? `UNTIL ${fmt(cs.from.min)}` : `UNTIL ${DAYS[cs.from.day]} ${fmt(cs.from.min)}`) : '';
+          return mk('F', {
+            ...extra, kind: 'CAR PARK', word: 'FREE', road: codeLine(cpIn), roadShort: codeLine(cpIn),
+            detail: `FREE ${until}`.trim(), puckDetail: until || 'NO CHARGE NOW',
+            instr: `In the car park? No RingGo charge now. Pay from then with ${cpInfo(cpIn)}.${cpIn.note ? ` ${cpIn.note}` : ''} On the street outside, check the signs.`,
+            park: pk, pay: carPay(cpIn),
+          });
+        }
+        if (cs && cs.k === 'pay') return mk('P', {
+          ...extra, kind: 'CAR PARK', word: 'PAY', road: codeLine(cpIn), roadShort: codeLine(cpIn),
+          detail: [`PAY UNTIL ${fmt(cs.until)}`, ms].filter(Boolean).join(' - '),
+          puckDetail: [ms, `TIL ${fmt(cs.until)}`].filter(Boolean).join(' - '),
+          instr: `In the car park? ${cpInfo(cpIn)}.${cpIn.price ? ` ${cpIn.price}.` : ''}${cpIn.note ? ` ${cpIn.note}` : ''} On the street outside, check the signs.`,
+          park: pk, pay: carPay(cpIn),
+        });
+        if (cs) return mk('P', {   // outside the hours RingGo sells, not a free day: may be residents only
+          ...extra, kind: 'CAR PARK', word: 'CHECK', road: codeLine(cpIn), roadShort: codeLine(cpIn),
+          detail: 'NO RINGGO SALES NOW - CHECK THE SIGNS', puckDetail: 'CHECK THE SIGNS',
+          instr: `In the car park? RingGo doesn't sell parking at ${cpIn.name} now, so it may be residents only. Check the signs.${cpIn.note ? ` ${cpIn.note}` : ''}`,
+          park: pk, pay: carPay(cpIn),
+        });
         return mk('P', {
           ...extra, kind: 'CAR PARK', word: 'PAY', road: codeLine(cpIn), roadShort: codeLine(cpIn),
           detail: [`PAY WITH ${appOf(cpIn).name.toUpperCase()}`, ms].filter(Boolean).join(' - '),
