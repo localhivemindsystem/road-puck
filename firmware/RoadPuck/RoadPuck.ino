@@ -20,6 +20,10 @@
     STATE:  X = don't enter (inside/at the closure while closed)
             C = closed ahead          W = closing soon
             O = open to traffic       K = all clear
+            R = wrong way down a one-way street (flashing)
+            E = no entry: one-way street ahead against you
+            P = parked, zone controlled (permit or pay)
+            F = parked, zone controls off (free)
             G = no GPS fix
     e.g.    1|C|HACKFORD RD|180|UNTIL 09:15|8|SCHOOL STREET
 
@@ -203,13 +207,13 @@ void drawAlert() {
   char gps[20] = "";
   if (a.acc >= 0) snprintf(gps, sizeof gps, "GPS %d M", a.acc);
 
-  if (a.st == 'X') {  // DON'T ENTER: whole screen red, flashing
+  if (a.st == 'X' || a.st == 'R') {  // DON'T ENTER / WRONG WAY: whole screen red, flashing
     uint16_t bg = pulseOn ? C_RED : C_RED_DIM;
     gfx->fillScreen(C_BLACK);
     gfx->fillCircle(LCD_W / 2, LCD_H / 2, LCD_W / 2, bg);
     drawFit(a.kind[0] ? a.kind : "RESTRICTED", 90, C_WHITE, &F_SMALL);
-    drawFit("DON'T", 206, C_WHITE, &F_STATUS);
-    drawFit("ENTER", 322, C_WHITE, &F_STATUS);
+    drawFit(a.st == 'R' ? "WRONG" : "DON'T", 206, C_WHITE, &F_STATUS);
+    drawFit(a.st == 'R' ? "WAY" : "ENTER", 322, C_WHITE, &F_STATUS);
     drawFit(a.road, 378, C_WHITE, &F_ROAD, &F_ROAD_S, &F_SMALL);
     drawFit(a.detail, 420, C_WHITE, &F_SMALL, &F_TINY);
     gfx->flush();
@@ -220,22 +224,26 @@ void drawAlert() {
   const char *word;
   switch (a.st) {
     case 'C': col = C_RED; word = "CLOSED"; break;
+    case 'E': col = C_RED; word = "NO ENTRY"; break;
     case 'W': col = C_AMBER; word = "CLOSING"; break;
+    case 'P': col = C_AMBER; word = "PERMIT"; break;
     case 'O': col = C_GREEN; word = "OPEN"; break;
+    case 'F': col = C_GREEN; word = "FREE"; break;
     case 'G': col = C_AMBER; word = "NO GPS"; break;
     default:  col = C_GREEN; word = "CLEAR"; break;
   }
   gfx->fillScreen(C_BLACK);
-  ring(col, a.st == 'C' ? 14 : 8);
+  bool strong = a.st == 'C' || a.st == 'E';
+  ring(col, strong ? 14 : 8);
   if (gps[0]) drawFit(gps, 54, C_GREY, &F_TINY);
   drawFit(a.kind[0] ? a.kind : "ROAD PUCK", 100, col, &F_SMALL);
   drawFit(word, 228, col, &F_STATUS, &F_BIG);
   drawFit(a.road, 290, C_WHITE, &F_ROAD, &F_ROAD_S, &F_SMALL);
   if (dist[0]) {
     drawFit(dist, 378, C_WHITE, &F_BIG);
-    drawFit(a.detail, 424, a.st == 'C' ? C_WHITE : C_GREY, &F_SMALL, &F_TINY);
+    drawFit(a.detail, 424, strong ? C_WHITE : C_GREY, &F_SMALL, &F_TINY);
   } else {
-    drawFit(a.detail, 350, C_GREY, &F_ROAD_S, &F_SMALL, &F_TINY);
+    drawFit(a.detail, 350, (strong || a.st == 'P' || a.st == 'F') ? C_WHITE : C_GREY, &F_ROAD_S, &F_SMALL, &F_TINY);
   }
   gfx->flush();
 }
@@ -314,6 +322,11 @@ const char *DEMO[] = {
     "1|C|HACKFORD RD|180|UNTIL 09:15|8|SCHOOL STREET",
     "1|X|HACKFORD RD|30|CLOSED UNTIL 09:15|8|SCHOOL STREET",
     "1|O|SOUTH LAMBETH RD|250|NEXT CLOSURE 14:45|9|SCHOOL STREET",
+    "1|E|HEPWORTH RD|25|ONE WAY AGAINST YOU|6|ONE WAY STREET",
+    "1|R|HEPWORTH RD|0|TURN AROUND SAFELY|6|ONE WAY STREET",
+    "1|P|ZONE S STOCKWELL||OR PAY TIL 17:30|5|PARKING",
+    "1|F|ZONE S STOCKWELL||UNTIL TUE 08:30|5|PARKING",
+    "1|C|CAMBERWELL NEW RD||KEEP OUT - 24 HOURS|7|BUS LANE",
     "1|G|||WAITING FOR SIGNAL|60|ROAD PUCK",
 };
 const int DEMO_N = sizeof(DEMO) / sizeof(DEMO[0]);
@@ -395,7 +408,7 @@ void loop() {
   }
 
   // flash the DON'T ENTER screen
-  if (screen == SCR_ALERT && cur.st == 'X' && now - pulseMs > 450) {
+  if (screen == SCR_ALERT && (cur.st == 'X' || cur.st == 'R') && now - pulseMs > 450) {
     pulseMs = now;
     pulseOn = !pulseOn;
     drawAlert();

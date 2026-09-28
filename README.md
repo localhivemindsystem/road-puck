@@ -4,7 +4,14 @@ A dashboard alert for London drivers. Your phone watches your GPS against a data
 camera-enforced road restrictions and tells you, in big bold letters, whether the street
 ahead is **OPEN**, **CLOSING** or **CLOSED**. A small round puck on the dash mirrors it.
 
-This first test set covers **Lambeth's 43 School Streets**.
+This first test area is **Lambeth**:
+
+| Layer | What it warns about | Source |
+| --- | --- | --- |
+| School Streets | 43 timed closures: OPEN / CLOSING / CLOSED / DON'T ENTER | Lambeth Council |
+| Bus lanes | 256 lanes: in force (CLOSED), starting soon (CLOSING), not in force (OPEN) | TfL open data |
+| One-way streets | WRONG WAY when driving against the flow, NO ENTRY when heading straight into one | OpenStreetMap |
+| Parking | When parked: zone, controlled hours (PERMIT) or free (FREE), nearest pay-by-phone code | Lambeth Council |
 
 ![Puck screens](docs/puck-screens.png)
 
@@ -66,6 +73,10 @@ For every closure the engine measures the distance to the closed stretch of road
 | **CLOSING** | A closure ahead starts within 30 minutes. |
 | **OPEN** | A closure ahead is open right now (between times, weekend or school holiday). |
 | **CLEAR** | Nothing in the look-ahead zone. |
+| **WRONG WAY** (flashing red) | Two GPS readings in a row on a one-way street, travelling against its direction. |
+| **NO ENTRY** | The street 25-45 m straight ahead is one-way against you (and isn't the road you're on). |
+| **BUS LANE: CLOSED / CLOSING / OPEN** | You're on a road with a bus lane, travelling its way, and it is in force / starts within 15 min / not in force. GPS can't tell lanes apart, so this tells you the rule, not that you're in the lane. |
+| **PERMIT / FREE** | Stopped for 15 seconds inside a controlled parking zone: are the zone's controls on now, and until when? |
 | **NO GPS** | GPS accuracy worse than 100 m, or no fix for 15 seconds. |
 
 - **Look-ahead zone:** 250 m when slow, growing with speed up to 600 m, plus GPS error (capped at 50 m).
@@ -90,6 +101,14 @@ Run `node tools/test_engine.js` to check the rules against real Lambeth position
   `"verified_on_ground": false`. After a drive past, fix the line in
   `data/lambeth/school_streets.geojson` (geojson.io is handy for editing), set it to `true`,
   and run `python3 tools/build_dataset.py`.
+- **Bus lanes** come from [TfL's Bus Lanes open data](https://gis-tfl.opendata.arcgis.com/datasets/TfL::bus-lanes-1/about):
+  hours for weekdays, Saturday and Sunday, direction of travel and permitted vehicles, on borough and TfL roads.
+  The direction field is used, not the line's drawing order (43 of 260 lines are drawn backwards).
+- **Parking zones** come from Lambeth's CPZ timing zones layer, with boundaries simplified to about 4 m.
+  During controlled hours single yellow lines mean no waiting and bays need a permit or pay-by-phone.
+  The app doesn't know about double yellows, red routes or individual bay signs yet: always read the sign.
+  **Pay-by-phone** locations (510) come from Lambeth's ticket machine layer.
+- **One-way streets** come from the OpenStreetMap street map. Roundabouts and contraflow cycle lanes aren't treated specially yet.
 - Street map © OpenStreetMap contributors, available under the
   [Open Database License](https://www.openstreetmap.org/copyright).
 
@@ -102,15 +121,15 @@ python3 tools/build_dataset.py   # dataset -> docs/data
 python3 tools/build_app.py       # app/app.html -> docs/index.html
 python3 tools/make_fonts.py      # TTF -> firmware/RoadPuck/fonts.h
 python3 tools/puck_preview.py    # docs/puck-screens.png
-node tools/test_engine.js        # alert rule checks
+node tools/test_engine.js        # 40 alert rule checks on real Lambeth data
 ```
 
 ## Next
 
 - Bus gates and LTN camera filters (Lambeth publishes Digital Traffic Regulation Orders; the
   national D-TRO service is free to register for).
-- Bus lanes with their operating hours.
-- Parking restrictions: CPZ hours, yellow lines, pay-by-phone bays.
+- TfL red route stopping rules and yellow box junctions (both published by TfL with times).
+- Yellow lines and individual parking bays (in the D-TRO data).
 - More boroughs.
 
 Fonts: Anton and Barlow Condensed, SIL Open Font License (see `firmware/RoadPuck/FONT-LICENSE-*.txt`).

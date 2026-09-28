@@ -74,16 +74,18 @@ def screen(msg):
         return img
     _, st, road, dist, detail, acc, kind = msg.split("|")
     dist = int(dist) if dist else -1
-    if st == "X":
+    if st in ("X", "R"):
         d.ellipse((0, 0, 465, 465), fill=RED)
         fit(d, kind or "RESTRICTED", 90, WHITE, "SMALL")
-        fit(d, "DON'T", 206, WHITE, "STATUS")
-        fit(d, "ENTER", 322, WHITE, "STATUS")
+        fit(d, "WRONG" if st == "R" else "DON'T", 206, WHITE, "STATUS")
+        fit(d, "WAY" if st == "R" else "ENTER", 322, WHITE, "STATUS")
         fit(d, road, 378, WHITE, "ROAD", "ROAD_S", "SMALL")
         fit(d, detail, 420, WHITE, "SMALL", "TINY")
         return img
-    col, word = {"C": (RED, "CLOSED"), "W": (AMBER, "CLOSING"), "O": (GREEN, "OPEN"), "G": (AMBER, "NO GPS")}.get(st, (GREEN, "CLEAR"))
-    ring(d, col, 14 if st == "C" else 8)
+    col, word = {"C": (RED, "CLOSED"), "E": (RED, "NO ENTRY"), "W": (AMBER, "CLOSING"), "P": (AMBER, "PERMIT"),
+                 "O": (GREEN, "OPEN"), "F": (GREEN, "FREE"), "G": (AMBER, "NO GPS")}.get(st, (GREEN, "CLEAR"))
+    strong = st in ("C", "E")
+    ring(d, col, 14 if strong else 8)
     if acc:
         fit(d, f"GPS {acc} M", 54, GREY, "TINY")
     fit(d, kind or "ROAD PUCK", 100, col, "SMALL")
@@ -91,9 +93,9 @@ def screen(msg):
     fit(d, road, 290, WHITE, "ROAD", "ROAD_S", "SMALL")
     if dist >= 0:
         fit(d, fmt_dist(dist), 378, WHITE, "BIG")
-        fit(d, detail, 424, WHITE if st == "C" else GREY, "SMALL", "TINY")
+        fit(d, detail, 424, WHITE if strong else GREY, "SMALL", "TINY")
     else:
-        fit(d, detail, 350, GREY, "ROAD_S", "SMALL", "TINY")
+        fit(d, detail, 350, WHITE if strong or st in ("P", "F") else GREY, "ROAD_S", "SMALL", "TINY")
     return img
 
 
@@ -104,16 +106,23 @@ SCREENS = [
     "1|C|HACKFORD RD|180|UNTIL 09:15|8|SCHOOL STREET",
     "1|X|HACKFORD RD|30|CLOSED UNTIL 09:15|8|SCHOOL STREET",
     "1|O|SOUTH LAMBETH RD|250|NEXT CLOSURE 14:45|9|SCHOOL STREET",
+    "1|E|HEPWORTH RD|25|ONE WAY AGAINST YOU|6|ONE WAY STREET",
+    "1|R|HEPWORTH RD|0|TURN AROUND SAFELY|6|ONE WAY STREET",
+    "1|P|ZONE S STOCKWELL||OR PAY TIL 17:30|5|PARKING",
+    "1|F|ZONE S STOCKWELL||UNTIL TUE 08:30|5|PARKING",
+    "1|C|CAMBERWELL NEW RD||KEEP OUT - 24 HOURS|7|BUS LANE",
+    "1|O|KING'S MEWS||USE IT TIL 16:00|6|BUS LANE",
 ]
 
 if __name__ == "__main__":
     tiles = [screen(s) for s in SCREENS]
-    pad = 24
-    sheet = Image.new("RGB", (len(tiles) * (466 + pad) + pad, 466 + 2 * pad), (20, 24, 29))
+    pad, cols = 24, 5
+    rows = (len(tiles) + cols - 1) // cols
+    sheet = Image.new("RGB", (cols * (466 + pad) + pad, rows * (466 + pad) + pad), (20, 24, 29))
+    mask = Image.new("L", (466, 466), 0)
+    ImageDraw.Draw(mask).ellipse((0, 0, 465, 465), fill=255)
     for i, t in enumerate(tiles):
-        mask = Image.new("L", (466, 466), 0)
-        ImageDraw.Draw(mask).ellipse((0, 0, 465, 465), fill=255)
-        sheet.paste(t, (pad + i * (466 + pad), pad), mask)
+        sheet.paste(t, (pad + (i % cols) * (466 + pad), pad + (i // cols) * (466 + pad)), mask)
     out = ROOT / "docs" / "puck-screens.png"
     sheet.save(out)
     print("wrote", out, "| text too wide:", OVERFLOW or "none")
