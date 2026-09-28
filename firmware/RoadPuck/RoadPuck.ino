@@ -37,6 +37,7 @@
 #include <BLEServer.h>
 #include <BLEUtils.h>
 #include "fonts.h"
+#include "alert.h"
 
 // ---------- board pins (from Waveshare's pin_config.h) ----------
 #define LCD_SDIO0 4
@@ -72,14 +73,6 @@ Arduino_Canvas *gfx = new Arduino_Canvas(LCD_W, LCD_H, panel);
 uint16_t *fb = nullptr;
 
 // ---------- alert state ----------
-struct Alert {
-  char st = 0;
-  char road[48] = "";
-  int dist = -1;
-  char detail[48] = "";
-  int acc = -1;
-  char kind[32] = "";
-};
 
 Alert cur;                       // what is on screen
 volatile bool pending = false;   // a new message arrived
