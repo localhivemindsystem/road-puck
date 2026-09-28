@@ -1,0 +1,13 @@
+{
+  "borough": "Lambeth",
+  "source": "https://www.lambeth.gov.uk/schools-education/school-term-holiday-dates/school-term-dates-2026-2027",
+  "note": "Lambeth standard dates for community schools. Academies and faith schools can differ by a few days. School Streets run in term time, including INSET days.",
+  "terms": [
+    ["2026-09-02", "2026-10-23"],
+    ["2026-11-02", "2026-12-18"],
+    ["2027-01-04", "2027-02-12"],
+    ["2027-02-22", "2027-03-25"],
+    ["2027-04-12", "2027-05-28"],
+    ["2027-06-07", "2027-07-22"]
+  ]
+}

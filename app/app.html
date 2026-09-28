@@ -1,0 +1,791 @@
+<title>Lambeth School Streets</title>
+<meta name="theme-color" content="#0B0D10">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:wght@600;700;800&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root{
+  color-scheme: dark;
+  --ground:#0B0D10; --panel:#14181D; --raise:#1C2228; --line:#2A313A;
+  --ink:#F2F4F7; --muted:#A3ACB7; --faint:#6B7480;
+  --red:#FF3B30; --red-ink:#FF6A60; --amber:#FFB020; --green:#3DDC84; --you:#5EC8FF;
+  --on-color:#0B0D10;
+  --block:'Anton', Impact, 'Arial Narrow Bold', sans-serif;
+  --cond:'Barlow Condensed', 'Arial Narrow', system-ui, sans-serif;
+  --mono:'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{background:var(--ground)}
+body{color:var(--ink);font-family:var(--cond);font-weight:700;font-size:18px;line-height:1.25;letter-spacing:.01em}
+button,select,input{font:inherit;color:inherit}
+button:focus-visible,select:focus-visible,input:focus-visible,a:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--you);outline-offset:2px}
+a{color:var(--you)}
+.app{padding-inline:12px;padding-block:10px 24px;max-width:1500px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+
+/* top bar */
+.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px}
+.brand{display:flex;align-items:baseline;gap:10px}
+.brand b{font-family:var(--block);font-weight:400;font-size:28px;letter-spacing:.04em;text-transform:uppercase}
+.brand span{color:var(--muted);font-size:16px;text-transform:uppercase;letter-spacing:.08em}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:8px;background:var(--raise);border:1px solid var(--line);font-size:15px;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+.chip i{width:9px;height:9px;border-radius:50%;background:var(--faint);display:inline-block}
+.chip.on i{background:var(--green)} .chip.warn i{background:var(--amber)} .chip.sim i{background:var(--you)}
+.tabs{display:flex;gap:6px}
+.tabs button{min-height:48px;padding:0 18px;border-radius:10px;border:1px solid var(--line);background:var(--panel);font-size:20px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--on-color);border-color:var(--ink)}
+
+/* layout */
+.views{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+.view{display:none;min-width:0}
+body[data-tab="drive"] #v-drive, body[data-tab="map"] #v-map, body[data-tab="data"] #v-data{display:flex}
+@media (min-width:1000px){
+  .views{grid-template-columns:440px minmax(0,1fr);align-items:start}
+  #v-drive{display:flex!important;position:sticky;top:10px}
+  body[data-tab="drive"] #v-map{display:flex}
+  .tabs .t-drive{display:none}
+}
+#v-drive,#v-data{flex-direction:column;gap:12px}
+#v-map{flex-direction:column;gap:8px}
+
+/* dashboard */
+.dash{container-type:inline-size;border-radius:18px;overflow:hidden;background:var(--panel);border:2px solid var(--line);display:flex;flex-direction:column}
+.band{padding:10px 16px 6px;display:flex;flex-direction:column;gap:0;background:var(--raise);color:var(--ink)}
+.kind{font-size:clamp(16px,4.4vw,22px);letter-spacing:.14em;text-transform:uppercase;opacity:.9}
+.word{font-family:var(--block);font-weight:400;font-size:clamp(64px,25cqi,132px);line-height:.95;text-transform:uppercase;letter-spacing:.01em;white-space:nowrap}
+.body{padding:12px 16px 16px;display:flex;flex-direction:column;gap:6px}
+.road{font-weight:800;font-size:clamp(30px,11cqi,50px);line-height:1;text-transform:uppercase;text-wrap:balance}
+.meta{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 16px}
+.dist{font-family:var(--block);font-weight:400;font-size:clamp(46px,17cqi,80px);line-height:1}
+.detail{font-size:clamp(22px,6vw,32px);text-transform:uppercase;color:var(--muted)}
+.instr{font-size:clamp(20px,5.4vw,28px);text-transform:uppercase;letter-spacing:.02em;padding-top:6px;border-top:1px solid var(--line)}
+.instr:empty{display:none}
+.dash[data-st="C"] .band{background:var(--red);color:var(--on-color)}
+.dash[data-st="C"]{border-color:var(--red)}
+.dash[data-st="C"] .detail{color:var(--ink)}
+.dash[data-st="W"] .band{background:var(--amber);color:var(--on-color)}
+.dash[data-st="W"]{border-color:var(--amber)}
+.dash[data-st="O"] .band{background:var(--green);color:var(--on-color)}
+.dash[data-st="K"] .band{background:#173D28;color:#9FF0C4}
+.dash[data-st="G"] .band{background:#3A2C0C;color:var(--amber)}
+.dash[data-st="X"]{background:var(--red);border-color:#fff;color:#fff}
+.dash[data-st="X"] .band{background:transparent;color:#fff}
+.dash[data-st="X"] .detail{color:#fff}
+.dash[data-st="X"] .instr{border-color:rgba(255,255,255,.5)}
+.dash[data-st="X"] .word{font-size:clamp(60px,21cqi,104px);white-space:normal}
+@keyframes flash{0%,100%{background:var(--red)}50%{background:#8A120C}}
+.dash[data-st="X"]{animation:flash .9s steps(1) infinite}
+@media (prefers-reduced-motion:reduce){.dash[data-st="X"]{animation:none}}
+
+/* controls */
+.controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.big{min-height:60px;border-radius:12px;border:2px solid var(--line);background:var(--raise);font-size:22px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;padding:6px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;line-height:1.05}
+.big small{font-size:14px;color:var(--muted);letter-spacing:.06em}
+.big:hover{border-color:var(--faint)}
+.big.primary{background:var(--ink);color:var(--on-color);border-color:var(--ink)}
+.big.primary small{color:#3C434C}
+.big.on{border-color:var(--green)}
+.big[disabled]{opacity:.45;cursor:not-allowed}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.label{font-size:15px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.clockline{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px}
+.clock{font-family:var(--block);font-weight:400;font-size:26px;letter-spacing:.03em}
+details summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-size:17px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+select{height:48px;border-radius:10px;border:1px solid var(--line);background:var(--raise);padding:0 10px;font-size:18px}
+input[type=range]{width:100%;height:36px;accent-color:var(--you)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{min-height:44px;padding:0 12px;border:0;background:var(--raise);font-size:17px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--on-color)}
+.steps{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:4px;font-size:18px}
+.note{font-size:15px;color:var(--muted);font-weight:600;line-height:1.35}
+.puckwrap{display:flex;align-items:center;gap:14px}
+#puckView{width:150px;height:150px;border-radius:50%;box-shadow:0 0 0 6px #202328,0 0 0 7px #353B43;flex:none;background:#000}
+
+/* map */
+.mapbox{position:relative;height:min(72vh,760px);min-height:420px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#07090B;touch-action:none}
+@media (min-width:1000px){.mapbox{height:calc(100vh - 150px)}}
+#map{display:block;width:100%;height:100%;cursor:crosshair}
+.mapctl{position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:6px}
+.mapctl button{min-width:48px;min-height:48px;border-radius:10px;border:1px solid var(--line);background:rgba(20,24,29,.92);font-size:18px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;padding:0 10px}
+.mapctl button[aria-pressed="true"]{background:var(--you);color:var(--on-color);border-color:var(--you)}
+.maphint{position:absolute;left:10px;top:10px;max-width:calc(100% - 90px);background:rgba(11,13,16,.88);border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-size:16px;text-transform:uppercase;letter-spacing:.05em}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:16px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:22px;height:6px;border-radius:3px;display:inline-block}
+.info{position:absolute;left:10px;right:10px;bottom:10px;background:rgba(20,24,29,.96);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:4px;max-width:520px}
+.info h3{margin:0;font-weight:800;font-size:26px;text-transform:uppercase;line-height:1}
+.info .times{font-family:var(--mono);font-size:15px;font-weight:500}
+.info .x{position:absolute;right:6px;top:6px;min-width:44px;min-height:44px;border:0;background:transparent;font-size:24px;cursor:pointer}
+
+/* data */
+.stats{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:baseline}
+.stats b{font-family:var(--block);font-weight:400;font-size:40px;line-height:1;margin-right:6px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;min-width:860px;font-size:16px}
+th{position:sticky;top:0;background:var(--raise);text-align:left;font-size:14px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:10px}
+td{padding:9px 10px;border-top:1px solid var(--line);vertical-align:top}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:var(--raise)}
+td.m{font-family:var(--mono);font-weight:500;font-size:14px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.pill{display:inline-block;padding:2px 8px;border-radius:6px;font-size:14px;letter-spacing:.08em}
+.pill.closed{background:var(--red);color:var(--on-color)} .pill.closing{background:var(--amber);color:var(--on-color)} .pill.open{background:#1E3A2A;color:#9FF0C4}
+.pill.check{background:#3A2C0C;color:var(--amber)}
+#q{height:48px;border-radius:10px;border:1px solid var(--line);background:var(--raise);padding:0 12px;font-size:18px;width:min(100%,360px)}
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--on-color);padding:12px 16px;border-radius:12px;font-size:18px;max-width:calc(100% - 32px);z-index:10;text-transform:uppercase;letter-spacing:.03em}
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="brand"><b>Road Puck</b><span>Lambeth School Streets</span></div>
+    <div class="row">
+      <span class="chip" id="chipMode"><i></i><span>Ready</span></span>
+      <span class="chip" id="chipPuck"><i></i><span>Puck off</span></span>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Views">
+      <button type="button" role="tab" class="t-drive" data-tab="drive" aria-selected="true">Drive</button>
+      <button type="button" role="tab" data-tab="map" aria-selected="false">Map</button>
+      <button type="button" role="tab" data-tab="data" aria-selected="false">Data</button>
+    </nav>
+  </header>
+
+  <main class="views">
+    <!-- DRIVE -->
+    <section class="view" id="v-drive" aria-label="Drive">
+      <div class="dash" id="dash" data-st="N" aria-live="polite">
+        <div class="band">
+          <div class="kind" id="dKind">Road Puck</div>
+          <div class="word" id="dWord">Ready</div>
+        </div>
+        <div class="body">
+          <div class="road" id="dRoad">Tap Start GPS</div>
+          <div class="meta"><span class="dist" id="dDist"></span><span class="detail" id="dDetail"></span></div>
+          <div class="instr" id="dInstr"></div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button type="button" class="big primary" id="bGps">Start GPS<small>Uses this phone</small></button>
+        <button type="button" class="big" id="bPuck">Connect puck<small>Bluetooth</small></button>
+        <button type="button" class="big" id="bSound" aria-pressed="true">Voice on<small>Spoken alerts</small></button>
+        <button type="button" class="big" id="bSim" aria-pressed="false">Simulate<small>Tap the map</small></button>
+      </div>
+
+      <div class="card">
+        <div class="clockline">
+          <span class="label">Time</span>
+          <span class="clock" id="clock">MON 08:40</span>
+          <span class="chip" id="chipTerm"><i></i><span>Term time</span></span>
+        </div>
+        <details id="timeBox">
+          <summary>Change day, time or term</summary>
+          <div class="row" style="margin-bottom:8px">
+            <div class="seg" role="group" aria-label="Clock">
+              <button type="button" id="tLive" aria-pressed="true">Live</button>
+              <button type="button" id="tCustom" aria-pressed="false">Set my own</button>
+            </div>
+            <label for="termSel" class="note">Term</label>
+            <select id="termSel">
+              <option value="auto">Lambeth dates</option>
+              <option value="term">Always term</option>
+              <option value="holiday">Holidays</option>
+            </select>
+          </div>
+          <div class="row">
+            <label for="daySel" class="note">Day</label>
+            <select id="daySel">
+              <option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option>
+              <option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option><option value="0">Sunday</option>
+            </select>
+          </div>
+          <label for="timeRange" class="note">Time of day (drag)</label>
+          <input type="range" id="timeRange" min="360" max="1200" step="5" value="520">
+        </details>
+      </div>
+
+      <div class="card">
+        <div class="label">Puck screen</div>
+        <div class="puckwrap">
+          <canvas id="puckView" width="466" height="466" aria-label="What the puck is showing"></canvas>
+          <p class="note" id="puckNote" style="margin:0">This is exactly what the puck shows. Connect it with the button above.</p>
+        </div>
+      </div>
+
+      <div class="card" id="howto">
+        <div class="label">Before you drive</div>
+        <ol class="steps">
+          <li>Open this page in Chrome on your Android phone.</li>
+          <li>Mount the phone, tap START GPS and allow location.</li>
+          <li>Switch the puck on and tap CONNECT PUCK.</li>
+          <li>Keep this page open. The screen stays on while GPS runs.</li>
+        </ol>
+        <p class="note" style="margin:0">Road signs always take priority. School Street times come from Lambeth Council; street positions are from OpenStreetMap and not yet checked on the ground.</p>
+      </div>
+    </section>
+
+    <!-- MAP -->
+    <section class="view" id="v-map" aria-label="Map">
+      <div class="mapbox" id="mapbox">
+        <canvas id="map" aria-label="Street map of Lambeth with School Street closures"></canvas>
+        <div class="maphint" id="mapHint">Tap a closure to see its details</div>
+        <div class="mapctl">
+          <button type="button" id="zIn" aria-label="Zoom in">+</button>
+          <button type="button" id="zOut" aria-label="Zoom out">&minus;</button>
+          <button type="button" id="zFit">Fit</button>
+          <button type="button" id="zFollow" aria-pressed="true">Me</button>
+        </div>
+        <div class="info" id="info" hidden></div>
+      </div>
+      <div class="legend">
+        <span><i class="sw" style="background:var(--red)"></i>Closed now</span>
+        <span><i class="sw" style="background:var(--amber)"></i>Closing within 30 min</span>
+        <span><i class="sw" style="background:var(--green)"></i>Open</span>
+        <span><i class="sw" style="background:var(--you)"></i>You + alert zone</span>
+      </div>
+    </section>
+
+    <!-- DATA -->
+    <section class="view" id="v-data" aria-label="Data">
+      <div class="card">
+        <div class="stats">
+          <span><b id="nAll">43</b>School Streets</span>
+          <span><b id="nClosed">0</b>closed now</span>
+          <span><b id="nCheck">0</b>to check on the ground</span>
+        </div>
+        <p class="note" style="margin:0">Closure times: <a href="https://www.lambeth.gov.uk/streets-roads-transport/school-streets/school-streets-times-locations" target="_blank" rel="noopener">Lambeth Council School Streets page</a>. Term dates: <a href="https://www.lambeth.gov.uk/schools-education/school-term-holiday-dates/school-term-dates-2026-2027" target="_blank" rel="noopener">Lambeth 2026-27</a>. Street lines and map: &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>. Each closure is the stretch of the named road within 150 m of the point nearest the school. Rows marked CHECK need a look in Street View.</p>
+        <p class="note" style="margin:0">Files: <a href="data/school_streets.geojson" target="_blank" rel="noopener">school_streets.geojson</a> &middot; <a href="data/basemap.json" target="_blank" rel="noopener">basemap.json</a> &middot; <a href="data/term_dates.json" target="_blank" rel="noopener">term_dates.json</a></p>
+        <label for="q" class="label">Search road or school</label>
+        <input id="q" type="search" placeholder="e.g. Hackford" autocomplete="off">
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>ID</th><th>Road</th><th>School</th><th>Closed (school days)</th><th>Now</th><th>Placement</th><th>Lat, Lon</th><th>Check</th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="engine.js"></script>
+<script>
+(async function () {
+'use strict';
+const E = window.RoadEngine;
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const DAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+const embedded = window.self !== window.top;  // shown inside another page (no GPS or Bluetooth there)
+
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('roadpuck.' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem('roadpuck.' + k, JSON.stringify(v)); } catch (e) {} },
+};
+
+const S = {
+  feats: [], terms: [], base: null,
+  pos: null, lastFixAt: 0, gpsWatch: null, prevFix: null,
+  sim: false, simPrev: null,
+  timeMode: 'live', custom: { day: 1, min: 520 }, termMode: store.get('term', 'auto'),
+  sound: store.get('sound', true),
+  follow: true, sel: null, alert: null, spokenKey: '',
+  puck: { dev: null, chr: null, busy: false, queued: null, last: '', lastSent: 0 },
+};
+const track = E.makeTracker(4000);
+
+// ---------- load data ----------
+let gj, base, td;
+try {
+  [gj, base, td] = await Promise.all(['data/school_streets.geojson', 'data/basemap.json', 'data/term_dates.json']
+    .map(u => fetch(u).then(r => { if (!r.ok) throw new Error(u); return r.json(); })));
+} catch (e) {
+  $('dRoad').textContent = 'Data files missing';
+  $('dInstr').textContent = 'Open this page from its web address, not as a saved file.';
+  return;
+}
+S.feats = E.loadFeatures(gj);
+S.terms = td.terms;
+S.base = decodeBase(base);
+
+// ---------- clock ----------
+function clock() {
+  const live = E.londonNow();
+  const c = S.timeMode === 'live' ? { day: live.day, min: live.min } : { ...S.custom };
+  const term = S.termMode === 'auto' ? E.inTerm(live.date, S.terms) : S.termMode === 'term';
+  return { ...c, term, date: live.date };
+}
+
+// ---------- the loop ----------
+function update() {
+  const clk = clock();
+  let pos = S.pos;
+  if (pos && !S.sim && S.gpsWatch != null && Date.now() - S.lastFixAt > 15000) pos = { ...pos, acc: 999 };
+  const a = track(E.evaluate(S.feats, pos, clk), Date.now());
+  S.alert = a;
+  renderDash(a, clk);
+  drawPuck(E.puckMessage(a));
+  sendPuck(E.puckMessage(a));
+  speak(a);
+  drawMap();
+  renderRows(clk);
+}
+setInterval(update, 1000);
+
+// ---------- dashboard ----------
+function renderDash(a, clk) {
+  $('dash').dataset.st = a.st;
+  $('dKind').textContent = a.kind;
+  $('dWord').textContent = a.word;
+  $('dRoad').textContent = a.st === 'N' && S.sim ? 'TAP THE MAP' : a.road;
+  $('dDist').textContent = a.dist != null && a.st !== 'K' ? E.fmtDist(a.dist) : '';
+  $('dDetail').textContent = a.detail;
+  $('dInstr').textContent = a.st === 'N' && S.sim ? 'Tap the map to place the car, then tap again further along to drive.' : a.instr;
+  $('clock').textContent = `${DAYS[clk.day]} ${E.fmt(clk.min)}${S.timeMode === 'live' ? '' : ' (SET)'}`;
+  const ct = $('chipTerm');
+  ct.className = 'chip ' + (clk.term ? 'on' : 'warn');
+  ct.lastElementChild.textContent = clk.term ? 'Term time' : 'School holidays';
+  const cm = $('chipMode');
+  if (S.sim) { cm.className = 'chip sim'; cm.lastElementChild.textContent = 'Simulation'; }
+  else if (S.gpsWatch != null) {
+    const acc = S.pos ? Math.round(S.pos.acc) : null;
+    cm.className = 'chip ' + (acc != null && acc <= 30 ? 'on' : 'warn');
+    cm.lastElementChild.textContent = acc != null ? `GPS \u00b1${acc} m` : 'Finding GPS';
+  } else { cm.className = 'chip'; cm.lastElementChild.textContent = 'GPS off'; }
+}
+
+// ---------- puck preview (same layout as the firmware) ----------
+const pv = $('puckView').getContext('2d');
+const PF = {
+  STATUS: '124px Anton', BIG: '84px Anton',
+  ROAD: '800 48px "Barlow Condensed"', ROAD_S: '800 38px "Barlow Condensed"',
+  SMALL: '700 32px "Barlow Condensed"', TINY: '600 22px "Barlow Condensed"',
+};
+function capH(font) { pv.font = font; return pv.measureText('H').actualBoundingBoxAscent; }
+function chord(top, bottom, margin) { const r = 233, dy = Math.max(Math.abs(top - r), Math.abs(bottom - r)); return dy >= r ? 0 : 2 * Math.sqrt(r * r - dy * dy) - 2 * margin; }
+function fit(text, baseline, color, fonts) {
+  let use = fonts[0];
+  for (const f of fonts) { use = f; pv.font = f; if (pv.measureText(text).width <= chord(baseline - capH(f), baseline, 22)) break; }
+  pv.font = use; pv.fillStyle = color; pv.textAlign = 'center'; pv.textBaseline = 'alphabetic';
+  pv.fillText(text, 233, baseline);
+}
+function disc(color, r = 233) { pv.fillStyle = color; pv.beginPath(); pv.arc(233, 233, r, 0, Math.PI * 2); pv.fill(); }
+let puckFlash = true;
+function drawPuck(msg) {
+  const [v, st, road, dist, detail, acc, kind] = msg.split('|');
+  const distTxt = dist === '' ? '' : E.fmtDist(Number(dist));
+  pv.clearRect(0, 0, 466, 466);
+  disc('#000');
+  if (st === 'X') {
+    disc(puckFlash ? '#FF3B30' : '#8A120C');
+    fit(kind || 'RESTRICTED', 90, '#fff', [PF.SMALL]);
+    fit("DON'T", 206, '#fff', [PF.STATUS]);
+    fit('ENTER', 322, '#fff', [PF.STATUS]);
+    fit(road, 378, '#fff', [PF.ROAD, PF.ROAD_S, PF.SMALL]);
+    fit(detail, 420, '#fff', [PF.SMALL, PF.TINY]);
+    return;
+  }
+  const col = { C: '#FF3B30', W: '#FFB020', O: '#3DDC84', G: '#FFB020' }[st] || '#3DDC84';
+  const word = { C: 'CLOSED', W: 'CLOSING', O: 'OPEN', G: 'NO GPS' }[st] || 'CLEAR';
+  disc(col); disc('#000', 233 - (st === 'C' ? 14 : 8));
+  if (acc !== '') fit(`GPS ${acc} M`, 54, '#9AA4AE', [PF.TINY]);
+  fit(kind || 'ROAD PUCK', 100, col, [PF.SMALL]);
+  fit(word, 228, col, [PF.STATUS, PF.BIG]);
+  fit(road, 290, '#fff', [PF.ROAD, PF.ROAD_S, PF.SMALL]);
+  if (distTxt) { fit(distTxt, 378, '#fff', [PF.BIG]); fit(detail, 424, st === 'C' ? '#fff' : '#9AA4AE', [PF.SMALL, PF.TINY]); }
+  else fit(detail, 350, '#9AA4AE', [PF.ROAD_S, PF.SMALL, PF.TINY]);
+}
+setInterval(() => { if (S.alert && S.alert.st === 'X') { puckFlash = !puckFlash; drawPuck(E.puckMessage(S.alert)); } }, 450);
+
+// ---------- voice ----------
+let audio = null;
+function beep(n) {
+  try {
+    audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+    for (let i = 0; i < n; i++) {
+      const o = audio.createOscillator(), g = audio.createGain();
+      o.frequency.value = 880; o.connect(g); g.connect(audio.destination);
+      const t = audio.currentTime + i * 0.22;
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.4, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+      o.start(t); o.stop(t + 0.2);
+    }
+  } catch (e) {}
+}
+function speak(a) {
+  const key = a.st + (a.f ? a.f.id : '');
+  if (key === S.spokenKey) return;
+  const prev = S.spokenKey; S.spokenKey = key;
+  if (!S.sound || !prev) return;
+  const road = a.f ? a.f.road : '';
+  const line = { X: `Don't enter. ${road} is closed.`, C: `School street closed ahead. ${road}.`, W: `School street closing soon. ${road}.` }[a.st];
+  if (!line) return;
+  beep(a.st === 'X' ? 3 : a.st === 'C' ? 2 : 1);
+  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(line); u.lang = 'en-GB'; u.rate = 1.05; speechSynthesis.speak(u); } catch (e) {}
+}
+function setSound(on) {
+  S.sound = on; store.set('sound', on);
+  const b = $('bSound'); b.setAttribute('aria-pressed', String(on)); b.classList.toggle('on', on);
+  b.firstChild.textContent = on ? 'Voice on' : 'Voice off';
+}
+$('bSound').onclick = () => { setSound(!S.sound); if (S.sound) beep(1); };
+
+// ---------- GPS ----------
+let wake = null;
+async function keepAwake() { try { wake = await navigator.wakeLock.request('screen'); } catch (e) {} }
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && S.gpsWatch != null) keepAwake(); });
+function startGps() {
+  if (embedded) { toast('GPS works in the phone app page, not in this preview. Use Simulate here.'); return; }
+  if (!('geolocation' in navigator)) { toast('This browser has no GPS access.'); return; }
+  setSim(false);
+  S.gpsWatch = navigator.geolocation.watchPosition(onFix, err => {
+    toast(err.code === 1 ? 'Location blocked. Allow location for this page in Chrome settings.' : 'No GPS signal yet. Keep the phone where it can see the sky.');
+  }, { enableHighAccuracy: true, maximumAge: 1000, timeout: 20000 });
+  keepAwake(); beep(1);
+  const b = $('bGps'); b.firstChild.textContent = 'Stop GPS'; b.lastChild.textContent = 'Running'; b.classList.remove('primary'); b.classList.add('on');
+  S.follow = true; $('zFollow').setAttribute('aria-pressed', 'true');
+  update();
+}
+function stopGps() {
+  if (S.gpsWatch != null) navigator.geolocation.clearWatch(S.gpsWatch);
+  S.gpsWatch = null; S.pos = null; S.prevFix = null;
+  try { wake && wake.release(); } catch (e) {}
+  const b = $('bGps'); b.firstChild.textContent = 'Start GPS'; b.lastChild.textContent = 'Uses this phone'; b.classList.add('primary'); b.classList.remove('on');
+  update();
+}
+function onFix(p) {
+  if (S.sim) return;
+  const [x, y] = E.toM(p.coords.longitude, p.coords.latitude);
+  let heading = p.coords.heading, speed = p.coords.speed;
+  if (S.prevFix) {  // work out direction ourselves when the phone doesn't say
+    const dx = x - S.prevFix.x, dy = y - S.prevFix.y, dt = (p.timestamp - S.prevFix.t) / 1000;
+    if (speed == null && dt > 0) speed = Math.hypot(dx, dy) / dt;
+    if ((heading == null || isNaN(heading)) && Math.hypot(dx, dy) > 8) heading = (Math.atan2(dx, dy) * 180 / Math.PI + 360) % 360;
+  }
+  if (heading != null && isNaN(heading)) heading = null;
+  S.prevFix = { x, y, t: p.timestamp };
+  S.pos = { x, y, acc: p.coords.accuracy, speed, heading };
+  S.lastFixAt = Date.now();
+  if (S.follow) { V.cx = x; V.cy = y; if (V.k < 0.6) V.k = 0.9; }
+  update();
+}
+$('bGps').onclick = () => (S.gpsWatch == null ? startGps() : stopGps());
+
+// ---------- simulation ----------
+function setSim(on) {
+  S.sim = on;
+  $('bSim').setAttribute('aria-pressed', String(on));
+  $('bSim').classList.toggle('on', on);
+  $('bSim').firstChild.textContent = on ? 'Simulating' : 'Simulate';
+  $('mapHint').textContent = on ? 'Simulation: tap the map along a route to drive' : S.gpsWatch != null ? 'Live GPS' : 'Tap a closure to see its details';
+  if (on) { S.simPrev = S.pos ? [S.pos.x, S.pos.y] : null; }
+}
+$('bSim').onclick = () => {
+  setSim(!S.sim);
+  if (S.sim) { if (S.gpsWatch != null) stopGps(); setSim(true); if (window.innerWidth < 1000) setTab('map'); toast('Tap the map to move the car. Tap again further on to drive.'); }
+  update();
+};
+function simMoveTo(x, y) {
+  let heading = null;
+  if (S.simPrev && Math.hypot(x - S.simPrev[0], y - S.simPrev[1]) > 15) heading = E.bearing(S.simPrev, [x, y]);
+  S.simPrev = [x, y];
+  S.pos = { x, y, acc: 8, speed: heading != null ? 8 : null, heading };
+  update();
+}
+
+// ---------- Bluetooth puck ----------
+const SVC = '7a1e0001-3c4b-4d2a-9f6e-2b8c5d1a0e10', CHR = '7a1e0002-3c4b-4d2a-9f6e-2b8c5d1a0e10';
+function puckUI(state, text) {
+  const c = $('chipPuck'); c.className = 'chip ' + (state === 'on' ? 'on' : state === 'busy' ? 'warn' : '');
+  c.lastElementChild.textContent = text;
+  const b = $('bPuck'); b.firstChild.textContent = state === 'on' ? 'Puck connected' : 'Connect puck';
+  b.lastChild.textContent = state === 'on' ? 'Tap to disconnect' : 'Bluetooth';
+  b.classList.toggle('on', state === 'on');
+  $('puckNote').textContent = state === 'on' ? 'Live: the puck is showing this now.' : 'This is exactly what the puck shows. Connect it with the button above.';
+}
+async function connectPuck() {
+  if (embedded || !navigator.bluetooth) {
+    toast(embedded ? 'Bluetooth works in the phone app page, not in this preview.' : 'This browser has no Bluetooth. Use Chrome on Android.');
+    return;
+  }
+  try {
+    const dev = await navigator.bluetooth.requestDevice({ filters: [{ namePrefix: 'RoadPuck' }], optionalServices: [SVC] });
+    dev.addEventListener('gattserverdisconnected', onPuckLost);
+    S.puck.dev = dev;
+    await attach();
+  } catch (e) {
+    if (e && e.name !== 'NotFoundError') toast('Could not connect. Is the puck on and showing CONNECT?');
+  }
+}
+async function attach() {
+  puckUI('busy', 'Connecting');
+  const server = await S.puck.dev.gatt.connect();
+  const svc = await server.getPrimaryService(SVC);
+  S.puck.chr = await svc.getCharacteristic(CHR);
+  puckUI('on', S.puck.dev.name || 'Puck on');
+  S.puck.last = ''; sendPuck(E.puckMessage(S.alert));
+}
+async function onPuckLost() {
+  S.puck.chr = null;
+  if (!S.puck.dev) { puckUI('off', 'Puck off'); return; }
+  puckUI('busy', 'Reconnecting');
+  for (let i = 0; i < 5 && S.puck.dev; i++) {
+    await new Promise(r => setTimeout(r, 1500 * (i + 1)));
+    try { await attach(); return; } catch (e) {}
+  }
+  puckUI('off', 'Puck lost');
+}
+function disconnectPuck() { const d = S.puck.dev; S.puck.dev = null; S.puck.chr = null; try { d && d.gatt.disconnect(); } catch (e) {} puckUI('off', 'Puck off'); }
+$('bPuck').onclick = () => (S.puck.chr ? disconnectPuck() : connectPuck());
+async function sendPuck(msg) {
+  const P = S.puck;
+  if (!P.chr) return;
+  const due = msg !== P.last || Date.now() - P.lastSent > 4000;  // heartbeat keeps the puck from showing WAITING
+  if (!due) return;
+  if (P.busy) { P.queued = msg; return; }
+  P.busy = true;
+  try { await P.chr.writeValueWithResponse(new TextEncoder().encode(msg)); P.last = msg; P.lastSent = Date.now(); }
+  catch (e) {}
+  P.busy = false;
+  if (P.queued) { const q = P.queued; P.queued = null; sendPuck(q); }
+}
+
+// ---------- time controls ----------
+function setTimeMode(m) {
+  S.timeMode = m;
+  $('tLive').setAttribute('aria-pressed', String(m === 'live'));
+  $('tCustom').setAttribute('aria-pressed', String(m === 'custom'));
+  update();
+}
+$('tLive').onclick = () => setTimeMode('live');
+$('tCustom').onclick = () => setTimeMode('custom');
+$('daySel').onchange = e => { S.custom.day = +e.target.value; setTimeMode('custom'); };
+$('timeRange').oninput = e => { S.custom.min = +e.target.value; setTimeMode('custom'); };
+$('termSel').onchange = e => { S.termMode = e.target.value; store.set('term', S.termMode); update(); };
+
+// ---------- tabs ----------
+function setTab(t) {
+  document.body.dataset.tab = t;
+  document.querySelectorAll('.tabs button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === t)));
+  requestAnimationFrame(resize);
+}
+document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => setTab(b.dataset.tab));
+
+// ---------- map ----------
+function decodeBase(b) {
+  const paths = [0, 1, 2, 3, 4, 5].map(() => new Path2D());
+  const labels = [];
+  for (const w of b.ways) {
+    const c = w[0], name = b.names[w[1]];
+    let x = 0, y = 0; const pts = [];
+    for (let i = 3; i < w.length; i += 2) { x += w[i]; y += w[i + 1]; pts.push([x, y]); }
+    pts.forEach(([px, py], i) => (i ? paths[c].lineTo(px, py) : paths[c].moveTo(px, py)));
+    if (name && pts.length > 1) {
+      let best = 0, bi = 0;
+      for (let i = 0; i < pts.length - 1; i++) { const L = Math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]); if (L > best) { best = L; bi = i; } }
+      labels.push({ name: name.toUpperCase(), c, x: (pts[bi][0] + pts[bi + 1][0]) / 2, y: (pts[bi][1] + pts[bi + 1][1]) / 2, len: best, ang: Math.atan2(pts[bi + 1][1] - pts[bi][1], pts[bi + 1][0] - pts[bi][0]) });
+    }
+  }
+  labels.sort((a, b) => a.c - b.c || b.len - a.len);
+  const bound = new Path2D();
+  for (const part of b.boundary) { let x = 0, y = 0; for (let i = 0; i < part.length; i += 2) { x += part[i]; y += part[i + 1]; i ? bound.lineTo(x, y) : bound.moveTo(x, y); } }
+  return { paths, labels, bound };
+}
+const cv = $('map'), ctx = cv.getContext('2d'), box = $('mapbox');
+const V = { cx: 0, cy: 0, k: 0.05 };
+let W = 0, H = 0, DPR = 1, fitted = false;
+function resize() {
+  DPR = window.devicePixelRatio || 1; W = box.clientWidth; H = box.clientHeight;
+  if (!W || !H) return;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  if (!fitted) { fitAll(); fitted = true; }
+  drawMap();
+}
+new ResizeObserver(resize).observe(box);
+const sx = x => W / 2 + (x - V.cx) * V.k, sy = y => H / 2 - (y - V.cy) * V.k;
+const inv = (px, py) => [V.cx + (px - W / 2) / V.k, V.cy - (py - H / 2) / V.k];
+function fitAll() {
+  let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+  S.feats.forEach(f => f.segs.flat().forEach(([x, y]) => { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }));
+  V.cx = (x0 + x1) / 2; V.cy = (y0 + y1) / 2; V.k = Math.min(W / (x1 - x0 + 900), H / (y1 - y0 + 900));
+}
+const ROADW = [5, 4.5, 3.6, 3, 1.7, 1.3], ROADC = ['#6E7C8E', '#5F6B7B', '#4E5968', '#434D5A', '#2F363F', '#282E35'];
+const STC = { closed: '#FF3B30', closing: '#FFB020', open: '#3DDC84' };
+let raf = 0;
+function drawMap() { if (!raf) raf = requestAnimationFrame(() => { raf = 0; paint(); }); }
+function paint() {
+  if (!W || !S.base) return;
+  const k = V.k, clk = clock();
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.fillStyle = '#07090B'; ctx.fillRect(0, 0, W, H);
+  // streets
+  ctx.setTransform(DPR * k, 0, 0, -DPR * k, DPR * (W / 2 - V.cx * k), DPR * (H / 2 + V.cy * k));
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  const zs = Math.max(0.6, Math.min(1.8, k / 0.6));
+  for (let c = 5; c >= 0; c--) {
+    if (c >= 4 && k < 0.06) continue;
+    ctx.strokeStyle = ROADC[c]; ctx.lineWidth = ROADW[c] * zs / k; ctx.stroke(S.base.paths[c]);
+  }
+  ctx.setLineDash([8 / k, 6 / k]); ctx.strokeStyle = '#8B7FD6'; ctx.lineWidth = 2 / k; ctx.stroke(S.base.bound); ctx.setLineDash([]);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  // street names
+  if (k > 0.3) drawLabels(k);
+  // closures
+  const zoomed = k > 0.25;
+  for (const f of S.feats) {
+    const col = STC[E.status(f, clk).k];
+    for (const s of f.segs) {
+      ctx.beginPath(); s.forEach(([x, y], i) => (i ? ctx.lineTo(sx(x), sy(y)) : ctx.moveTo(sx(x), sy(y))));
+      ctx.strokeStyle = '#000'; ctx.lineWidth = zoomed ? 13 : 9; ctx.stroke();
+      ctx.strokeStyle = col; ctx.lineWidth = zoomed ? 8 : 5; ctx.stroke();
+    }
+    if (!zoomed) { ctx.fillStyle = col; ctx.beginPath(); ctx.arc(sx(f.anchorM[0]), sy(f.anchorM[1]), 4.5, 0, Math.PI * 2); ctx.fill(); }
+    if (S.sel === f.id) { ctx.strokeStyle = '#5EC8FF'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(sx(f.anchorM[0]), sy(f.anchorM[1]), Math.max(18, 170 * k), 0, Math.PI * 2); ctx.stroke(); }
+  }
+  // you
+  if (S.pos) {
+    const px = sx(S.pos.x), py = sy(S.pos.y), a = S.alert;
+    if (a && a.warnR) { ctx.setLineDash([6, 6]); ctx.strokeStyle = 'rgba(94,200,255,.55)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(px, py, a.warnR * k, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]); }
+    ctx.fillStyle = 'rgba(94,200,255,.16)'; ctx.beginPath(); ctx.arc(px, py, Math.max(10, Math.min(S.pos.acc, 300) * k), 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#5EC8FF'; ctx.strokeStyle = '#07090B'; ctx.lineWidth = 3;
+    if (S.pos.heading != null) {
+      ctx.save(); ctx.translate(px, py); ctx.rotate(S.pos.heading * Math.PI / 180);
+      ctx.beginPath(); ctx.moveTo(0, -15); ctx.lineTo(11, 11); ctx.lineTo(0, 5); ctx.lineTo(-11, 11); ctx.closePath(); ctx.stroke(); ctx.fill(); ctx.restore();
+    } else { ctx.beginPath(); ctx.arc(px, py, 9, 0, Math.PI * 2); ctx.stroke(); ctx.fill(); }
+  }
+  // scale bar
+  const step = k > 0.8 ? 100 : k > 0.25 ? 250 : k > 0.08 ? 500 : 1000;
+  ctx.fillStyle = '#A3ACB7'; ctx.fillRect(12, H - 22, step * k, 3);
+  ctx.font = '700 15px "Barlow Condensed", sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  ctx.fillText(step >= 1000 ? step / 1000 + ' KM' : step + ' M', 12, H - 28);
+  ctx.fillStyle = '#6B7480'; ctx.textAlign = 'right'; ctx.font = '600 13px "Barlow Condensed", sans-serif';
+  ctx.fillText('\u00a9 OPENSTREETMAP CONTRIBUTORS', W - 10, H - 10);
+}
+function drawLabels(k) {
+  const placed = [];
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  let n = 0;
+  for (const L of S.base.labels) {
+    if (L.c >= 4 && k < 0.9) continue;
+    const x = sx(L.x), y = sy(L.y);
+    if (x < -50 || y < -50 || x > W + 50 || y > H + 50) continue;
+    const size = L.c <= 1 ? 15 : L.c <= 3 ? 14 : 13;
+    ctx.font = `${L.c <= 3 ? 800 : 700} ${size}px "Barlow Condensed", sans-serif`;
+    const w = ctx.measureText(L.name).width;
+    if (w > L.len * k * 1.1) continue;
+    const r = w / 2 + 4;
+    if (placed.some(p => Math.hypot(p[0] - x, p[1] - y) < p[2] + r)) continue;
+    placed.push([x, y, r]);
+    let ang = -L.ang; if (ang > Math.PI / 2) ang -= Math.PI; if (ang < -Math.PI / 2) ang += Math.PI;
+    ctx.save(); ctx.translate(x, y); ctx.rotate(ang);
+    ctx.lineWidth = 4; ctx.strokeStyle = '#07090B'; ctx.strokeText(L.name, 0, 0);
+    ctx.fillStyle = L.c <= 3 ? '#C9D0D8' : '#8D96A1'; ctx.fillText(L.name, 0, 0);
+    ctx.restore();
+    if (++n > 180) break;
+  }
+}
+// pan / zoom / tap
+const ptrs = new Map(); let drag = null, moved = false, pinch = null;
+cv.addEventListener('pointerdown', e => {
+  cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.offsetX, e.offsetY]);
+  if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]), k: V.k }; drag = null; }
+  else { drag = { x: e.offsetX, y: e.offsetY, cx: V.cx, cy: V.cy }; moved = false; }
+});
+cv.addEventListener('pointermove', e => {
+  if (!ptrs.has(e.pointerId)) return; ptrs.set(e.pointerId, [e.offsetX, e.offsetY]);
+  if (pinch && ptrs.size === 2) { const [a, b] = [...ptrs.values()]; V.k = clampK(pinch.k * Math.hypot(a[0] - b[0], a[1] - b[1]) / pinch.d); noFollow(); drawMap(); return; }
+  if (drag) { const dx = e.offsetX - drag.x, dy = e.offsetY - drag.y; if (Math.abs(dx) + Math.abs(dy) > 6) moved = true; if (moved) { V.cx = drag.cx - dx / V.k; V.cy = drag.cy + dy / V.k; noFollow(); drawMap(); } }
+});
+const up = e => {
+  ptrs.delete(e.pointerId); if (ptrs.size < 2) pinch = null;
+  if (drag && !moved && e.type === 'pointerup') tap(e.offsetX, e.offsetY);
+  drag = null;
+};
+cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+cv.addEventListener('wheel', e => { e.preventDefault(); const p = inv(e.offsetX, e.offsetY); V.k = clampK(V.k * (e.deltaY < 0 ? 1.2 : 1 / 1.2)); const q = inv(e.offsetX, e.offsetY); V.cx += p[0] - q[0]; V.cy += p[1] - q[1]; noFollow(); drawMap(); }, { passive: false });
+const clampK = k => Math.max(0.02, Math.min(6, k));
+function noFollow() { if (S.follow) { S.follow = false; $('zFollow').setAttribute('aria-pressed', 'false'); } }
+$('zIn').onclick = () => { V.k = clampK(V.k * 1.6); drawMap(); };
+$('zOut').onclick = () => { V.k = clampK(V.k / 1.6); drawMap(); };
+$('zFit').onclick = () => { noFollow(); fitAll(); drawMap(); };
+$('zFollow').onclick = () => { S.follow = true; $('zFollow').setAttribute('aria-pressed', 'true'); if (S.pos) { V.cx = S.pos.x; V.cy = S.pos.y; V.k = Math.max(V.k, 1.2); } drawMap(); };
+function tap(px, py) {
+  const w = inv(px, py);
+  let best = null, bd = 22 / V.k;
+  for (const f of S.feats) { const n = E.nearest(f, w); if (n.d < bd) { bd = n.d; best = f; } }
+  if (S.sim && !best) { simMoveTo(w[0], w[1]); return; }
+  if (S.sim && best && S.sel === best.id) { simMoveTo(w[0], w[1]); return; }
+  select(best ? best.id : null, false);
+}
+function select(id, zoom) {
+  S.sel = id;
+  const f = S.feats.find(x => x.id === id), el = $('info');
+  if (!f) { el.hidden = true; drawMap(); return; }
+  if (zoom) { noFollow(); V.cx = f.anchorM[0]; V.cy = f.anchorM[1]; V.k = Math.max(V.k, 1.6); }
+  const st = E.status(f, clock());
+  const now = st.k === 'closed' ? `CLOSED UNTIL ${E.fmt(st.until)}` : st.k === 'closing' ? `CLOSES AT ${E.fmt(st.at)}` : st.allDay ? `OPEN ALL DAY (${st.why})` : 'OPEN NOW';
+  const [lon, lat] = f.anchor;
+  el.innerHTML = `<button type="button" class="x" aria-label="Close">\u00d7</button>
+    <div class="label">${esc(f.kind)} \u00b7 ${esc(f.id)}</div>
+    <h3>${esc(f.road)}</h3>
+    <div class="note">${esc(f.school)}</div>
+    <div><span class="pill ${st.k}">${esc(now)}</span> ${f.placement === 'check' ? '<span class="pill check">CHECK PLACEMENT</span>' : ''}</div>
+    <div class="times">SCHOOL DAYS ${esc(f.windows.join(' + '))} \u00b7 ${lat.toFixed(5)}, ${lon.toFixed(5)}</div>
+    <div class="row"><a href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lon}" target="_blank" rel="noopener">Street View</a>
+    <a href="https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=18/${lat}/${lon}" target="_blank" rel="noopener">OpenStreetMap</a>
+    ${S.sim ? '<span class="note">Tap the road again to drive onto it</span>' : ''}</div>`;
+  el.hidden = false;
+  el.querySelector('.x').onclick = () => select(null);
+  drawMap();
+}
+
+// ---------- data table ----------
+let rowsKey = '';
+function renderRows(clk) {
+  const q = $('q').value.trim().toLowerCase();
+  const key = q + '|' + clk.day + '|' + clk.min + '|' + clk.term;
+  if (key === rowsKey) return; rowsKey = key;
+  let closed = 0;
+  const html = S.feats.map(f => {
+    const st = E.status(f, clk); if (st.k === 'closed') closed++;
+    if (q && !(f.road + ' ' + f.school).toLowerCase().includes(q)) return '';
+    const [lon, lat] = f.anchor;
+    const word = { closed: 'CLOSED', closing: 'CLOSING', open: 'OPEN' }[st.k];
+    return `<tr data-id="${f.id}" tabindex="0"><td class="m">${f.id}</td><td>${esc(f.road)}</td><td>${esc(f.school)}</td>
+      <td class="m">${esc(f.windows.join(' \u00b7 '))}</td><td><span class="pill ${st.k}">${word}</span></td>
+      <td>${f.placement === 'check' ? '<span class="pill check">CHECK</span>' : 'Near school'}</td>
+      <td class="m">${lat.toFixed(5)}, ${lon.toFixed(5)}</td>
+      <td><a href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lon}" target="_blank" rel="noopener">Street View</a></td></tr>`;
+  }).join('');
+  $('rows').innerHTML = html;
+  $('nAll').textContent = S.feats.length;
+  $('nClosed').textContent = closed;
+  $('nCheck').textContent = S.feats.filter(f => f.placement === 'check').length;
+}
+$('q').addEventListener('input', () => renderRows(clock()));
+const openRow = tr => { setTab('map'); select(tr.dataset.id, true); };
+$('rows').addEventListener('click', e => { if (e.target.closest('a')) return; const tr = e.target.closest('tr'); if (tr) openRow(tr); });
+$('rows').addEventListener('keydown', e => { if (e.key !== 'Enter') return; const tr = e.target.closest('tr'); if (tr) openRow(tr); });
+
+// ---------- helpers ----------
+let toastT = 0;
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => (t.hidden = true), 4500); }
+
+// ---------- start ----------
+document.body.dataset.tab = 'drive';
+if (window.matchMedia('(min-width:1000px)').matches) setTab('map');
+setSound(S.sound);
+$('termSel').value = S.termMode;
+if (embedded) {
+  // Preview inside another page: no GPS or Bluetooth, so open on a worked example.
+  S.timeMode = 'custom'; S.custom = { day: 1, min: 520 }; S.termMode = 'term';
+  $('termSel').value = 'term'; $('daySel').value = '1'; $('timeRange').value = 520;
+  $('tLive').setAttribute('aria-pressed', 'false'); $('tCustom').setAttribute('aria-pressed', 'true');
+  const reay = S.feats.find(f => f.road === 'Hackford Road');
+  setSim(true);
+  S.simPrev = [reay.anchorM[0] - 10, reay.anchorM[1] - 420];
+  simMoveTo(reay.anchorM[0] - 5, reay.anchorM[1] - 230);
+  V.cx = reay.anchorM[0]; V.cy = reay.anchorM[1] - 120; V.k = 1.1; fitted = true;
+  $('howto').querySelector('.label').textContent = 'Simulation \u00b7 Monday 08:40';
+}
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { drawPuck(E.puckMessage(S.alert || E.evaluate(S.feats, null, clock()))); drawMap(); });
+update();
+})();
+</script>
