@@ -1,0 +1,24 @@
+{
+ "_help": "RingGo locations inside Lambeth, copied by hand from the RingGo parking locator (https://myringgo.co.uk/parkinglocator: name search plus each site's tariff summary). All are off-street car parks; Lambeth's own street bays use PayByPhone. Every site below was checked to be inside the London Borough of Lambeth boundary (OpenStreetMap). Add a site: code, name, operator, lat, lng, max_stay, price, note, info_url, checked. Delete a site to drop it.",
+ "source": "https://myringgo.co.uk/parkinglocator",
+ "checked": "2026-09-29",
+ "sites": [
+  {"code": "32106", "name": "Cornwall Road car park", "operator": "APCOA / ParkBee", "lat": 51.50625, "lng": -0.11106, "area": "Waterloo",
+   "max_stay": "1 day", "price": "See ParkBee for prices", "note": "Underground car park. APCOA terms apply.", "info_url": "https://parkbee.com/en/garage-details/32106"},
+  {"code": "82368", "name": "National Theatre car park", "operator": "National Theatre", "lat": 51.50631, "lng": -0.11428, "area": "South Bank",
+   "max_stay": "31 days", "price": "Mon-Sat £7.50 up to 2 h, £12 4 h, £18 8 h, £28 24 h; £10 after 17:00, Sundays and bank holidays",
+   "note": "Free for Blue Badge holders.", "info_url": ""},
+  {"code": "38921", "name": "Pearman Street car park", "operator": "ParkBee", "lat": 51.49883, "lng": -0.11017, "area": "Waterloo",
+   "max_stay": "1 day", "price": "See ParkBee for prices", "note": "Park in bays 1-5 only. Enter the right number plate.", "info_url": "https://parkbee.com/en/garage-details/38921"},
+  {"code": "18839", "name": "Kennington Lane car park", "operator": "ParkBee", "lat": 51.49095, "lng": -0.10474, "area": "Kennington",
+   "max_stay": "1 day", "price": "See ParkBee for prices", "note": "Park in the 6 marked bays only.", "info_url": "https://parkbee.com/en/garage-details/18839"},
+  {"code": "18830", "name": "Fentiman Road car park", "operator": "ParkBee", "lat": 51.48138, "lng": -0.12001, "area": "Vauxhall",
+   "max_stay": "1 day", "price": "See ParkBee for prices", "note": "Open the gates yourself. Gates lock at 19:00: collect your car before then.", "info_url": "https://parkbee.com/en/garage-details/18830"},
+  {"code": "39079", "name": "Kennington Park car park", "operator": "ParkBee", "lat": 51.47974, "lng": -0.11079, "area": "Kennington",
+   "max_stay": "1 day", "price": "See ParkBee for prices", "note": "", "info_url": "https://parkbee.com/en/garage-details/39079"},
+  {"code": "38925", "name": "Ferndale Road car park", "operator": "ParkBee", "lat": 51.46396, "lng": -0.11741, "area": "Brixton",
+   "max_stay": "1 day", "price": "See ParkBee for prices", "note": "Enforced on site. Enter the right number plate.", "info_url": "https://parkbee.com/en/garage-details/38925"},
+  {"code": "828281", "name": "Sainsbury's Streatham Common car park", "operator": "Sainsbury's", "lat": 51.41941, "lng": -0.12903, "area": "Streatham",
+   "max_stay": "31 days", "price": "£4.40 a day", "note": "Park well away from the store entrance. Check opening times with the store.", "info_url": ""}
+ ]
+}

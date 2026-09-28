@@ -1,0 +1,30 @@
+{
+ "borough": "Lambeth",
+ "on_street": "paybyphone",
+ "car_parks": "ringgo",
+ "checked": "2026-09-29: Lambeth's parking bays page names PayByPhone for pay-for and shared-use street bays. The RingGo locator lists no Lambeth Council street bays, only private car parks in Lambeth (ParkBee, APCOA, National Theatre, Sainsbury's): see ringgo_car_parks.json.",
+ "note": "Other boroughs use other apps for street bays (RingGo in Westminster, Camden, Croydon and Merton, for example). Add a file like this per borough and set on_street.",
+ "apps": {
+  "paybyphone": {
+   "name": "PayByPhone",
+   "code_label": "location",
+   "open_url": "https://mycars-paybyphone.onelink.me/6UdM/d9d9tyjp",
+   "web_url": "https://m2.paybyphone.co.uk/parking/start/",
+   "android_package": "com.paybyphone",
+   "source": "https://www.lambeth.gov.uk/parking/parking-restrictions/where-you-can-park/parking-bays",
+   "phone": "020 7005 0055",
+   "cash": "Pay cash at a PayPoint shop: text CASH and the location code to 60075 to find one"
+  },
+  "ringgo": {
+   "name": "RingGo",
+   "code_label": "location",
+   "open_url": "",
+   "android_package": "co.uk.ringgo.android",
+   "android_url": "https://play.google.com/store/apps/details?id=co.uk.ringgo.android",
+   "ios_url": "https://apps.apple.com/gb/app/ringgo/id342898717",
+   "web_url": "https://myringgo.co.uk/",
+   "open_hint": "RingGo has no web link into its app: this opens its store page, then tap Open",
+   "source": "https://myringgo.co.uk/parkinglocator"
+  }
+ }
+}

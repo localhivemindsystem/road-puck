@@ -11,7 +11,7 @@ This first test area is **Lambeth**:
 | School Streets | 43 timed closures: OPEN / CLOSING / CLOSED / DON'T ENTER | Lambeth Council |
 | Bus lanes | 256 lanes: in force (CLOSED), starting soon (CLOSING), not in force (OPEN) | TfL open data |
 | One-way streets | WRONG WAY when driving against the flow, NO ENTRY when heading straight into one | OpenStreetMap |
-| Parking | When parked: PAY (pay bay: app, location code, max stay, until when), PERMIT (permit holders, until when) or FREE (until when); the phone offers Copy code and Open PayByPhone | Lambeth Council, PayByPhone |
+| Parking | When parked: PAY (pay bay: app, location code, max stay, until when), PERMIT (permit holders, until when) or FREE (until when); the phone offers Copy code and Open PayByPhone. Nearby RingGo car parks are offered too, with their code | Lambeth Council, PayByPhone, RingGo locator |
 | No entry | 360 bus gates, no-motor-vehicle filters, pedestrian zones and timed no-entry streets: NO ENTRY / DON'T ENTER (not yet checked on the ground) | OpenStreetMap |
 | Speed limit | The road's limit in a roundel on every screen; amber when you're over, flashing red when well over | OpenStreetMap |
 | Cameras | Speed and red-light cameras ahead: CAMERA (red if you're over) | OpenStreetMap |
@@ -123,11 +123,19 @@ Run `node tools/test_engine.js` to check the rules against real Lambeth position
   The app doesn't know about double yellows, red routes or individual bay signs yet: always read the sign.
   **Pay-by-phone** locations (510) come from Lambeth's ticket machine layer (council data dated January 2024), each with
   its own charging hours, maximum stay and hourly rate code (e.g. `3ph` = £3 an hour). Prices change: the app shows the real price.
-  Lambeth uses **PayByPhone**; `data/lambeth/parking_app.json` says which app a borough uses and how to open it, so
-  other boroughs (RingGo in Croydon, for example) just need their own file. PayByPhone has no public link that opens
-  the app with the location filled in, so the phone offers **Copy code** then **Open PayByPhone**.
+  Lambeth's street bays use **PayByPhone**; `data/lambeth/parking_apps.json` lists each app, how to open it, and which
+  one a borough uses for street bays (`on_street`), so other boroughs (RingGo in Westminster, Camden, Croydon and Merton)
+  just need their own file. Neither app has a public link that opens it with the location filled in, so the phone offers
+  **Copy code** then **Open PayByPhone** / **Open RingGo** (RingGo opens its Play Store or App Store page: tap Open).
   Lambeth's [parking bays page](https://www.lambeth.gov.uk/parking/parking-restrictions/where-you-can-park/parking-bays)
-  also lists paying by phone call (020 7005 0055) and cash at PayPoint shops. It names no RingGo for street parking.
+  also lists paying by phone call (020 7005 0055) and cash at PayPoint shops.
+- **RingGo car parks** (8) come from the [RingGo parking locator](https://myringgo.co.uk/parkinglocator), checked
+  29 Sep 2026 and kept by hand in `data/lambeth/ringgo_car_parks.json`. In Lambeth RingGo is used by private,
+  off-street car parks (ParkBee, APCOA, the National Theatre, Sainsbury's Streatham Common), not council street bays.
+  The list came from name searches (the locator's area search is behind a bot check), so it may miss some: add a site
+  to that file and rebuild. When parked, a nearby RingGo car park is offered **alongside** the street rule, never
+  instead of it, so a car on the street outside isn't told to pay the car park. Only where there's no street rule on
+  the map does the car park become the main answer (puck: `CAR PARK` / `PAY` / `RINGGO 39079`).
 - **No-entry restrictions** come from OpenStreetMap and are **not yet checked on the ground**: alerts say
   "CHECK THE SIGNS". After you've seen one, add it to `data/lambeth/restriction_checks.json` by its OSM way number
   (shown in the app's Data tab), e.g. `"123456789": {"verified": true, "note": "sign seen 1 Oct"}`, or

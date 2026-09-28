@@ -26,7 +26,8 @@ Inputs
       4 timed restriction (whens[whenIndex] is the OSM :conditional value).
   tools/source/osm_speed_cameras.json      speed/red-light cameras mapped in OpenStreetMap
   tools/source/tfl_yellow_boxes_raw.geojson TfL yellow box junctions (TfL_Yellow_box_junctions/FeatureServer/4)
-  data/lambeth/parking_app.json            which pay-by-phone app the borough uses and how to open it
+  data/lambeth/parking_apps.json           which app pays for street bays and car parks, and how to open each app
+  data/lambeth/ringgo_car_parks.json       RingGo car parks in Lambeth, copied by hand from the RingGo parking locator
   data/lambeth/restriction_checks.json     your on-the-ground checks: {"osm way id": {"verified": true, "note": ""}}
   tools/source/tfl_bus_lanes_raw.geojson
       TfL's "Bus Lanes" open data layer (services1.arcgis.com/YswvgzOodUvqkoCN/.../Bus_Lanes/FeatureServer/0),
@@ -41,6 +42,7 @@ Outputs
   data/lambeth/restrictions.geojson     no entry, bus gates, pedestrian zones and timed restrictions
   data/lambeth/cameras.geojson          speed and red-light cameras
   data/lambeth/yellow_boxes.geojson     yellow box junctions
+  data/lambeth/car_parks.geojson        car parks you pay for with an app (RingGo)
   docs/data/*                           copies the phone app loads
 """
 import json
@@ -128,6 +130,26 @@ def build_pay_by_phone():
     out.write_text(json.dumps(fc, indent=1))
     (WEB / "pay_by_phone.geojson").write_text(json.dumps(fc, separators=(",", ":")))
     print(f"{len(feats)} pay-by-phone locations")
+
+
+def build_car_parks():
+    src = json.loads((ROOT / "data" / "lambeth" / "ringgo_car_parks.json").read_text())
+    feats = []
+    for s in src["sites"]:
+        feats.append({
+            "type": "Feature",
+            "geometry": {"type": "Point", "coordinates": [s["lng"], s["lat"]]},
+            "properties": {
+                "code": str(s["code"]), "app": "ringgo", "name": s["name"], "operator": s.get("operator", ""),
+                "area": s.get("area", ""), "max_stay": s.get("max_stay", ""), "price": s.get("price", ""),
+                "note": s.get("note", ""), "info_url": s.get("info_url", ""),
+                "kind": "car park", "source": src["source"], "checked": src["checked"],
+            },
+        })
+    fc = {"type": "FeatureCollection", "name": "Lambeth app-paid car parks", "features": feats}
+    (ROOT / "data" / "lambeth" / "car_parks.geojson").write_text(json.dumps(fc, indent=1))
+    (WEB / "car_parks.geojson").write_text(json.dumps(fc, separators=(",", ":")))
+    print(f"{len(feats)} RingGo car parks")
 
 
 def build_bus_lanes():
@@ -278,7 +300,7 @@ def build():
     OUT.write_text(json.dumps(fc, indent=1))
     WEB.mkdir(parents=True, exist_ok=True)
     (WEB / "school_streets.geojson").write_text(json.dumps(fc, separators=(",", ":")))
-    for name in ("term_dates.json", "parking_app.json"):
+    for name in ("term_dates.json", "parking_apps.json"):
         shutil.copy(ROOT / "data" / "lambeth" / name, WEB / name)
     print(f"{len(feats)} School Streets, {sum(f['properties']['placement'] == 'check' for f in feats)} to check")
 
@@ -287,5 +309,6 @@ if __name__ == "__main__":
     build()
     build_parking()
     build_pay_by_phone()
+    build_car_parks()
     build_bus_lanes()
     build_streets()

@@ -363,6 +363,15 @@
   function loadPayByPhone(geojson) {
     return geojson.features.map(f => ({ ...f.properties, m: toM(f.geometry.coordinates[0], f.geometry.coordinates[1]), rules: parsePayHours(f.properties.hours, f.properties.days) }));
   }
+  // App-paid car parks (RingGo locator): off-street, so never shown as the street's rule.
+  function loadCarParks(geojson) {
+    return geojson.features.map(f => ({ ...f.properties, m: toM(f.geometry.coordinates[0], f.geometry.coordinates[1]) }));
+  }
+  // Which app pays for a place: apps file {on_street, apps:{key:{name,...}}}; older single-app files still work.
+  function appFor(apps, key) {
+    if (apps && apps.apps) return apps.apps[key || apps.on_street] || apps.apps[apps.on_street] || { name: key || 'PayByPhone' };
+    return apps || { name: 'PayByPhone' };
+  }
   function nearestPayByPhone(points, p, maxD = 150) {
     let best = null;
     for (const pt of points) {
@@ -705,37 +714,56 @@
     if (restrWarn) return restrWarn;
 
     // --- parked: what are the parking rules here? ---
-    if (ctx.parked && (ctx.zones || ctx.pbp)) {
+    if (ctx.parked && (ctx.zones || ctx.pbp || ctx.cps)) {
+      const apps = ctx.apps || ctx.payApp;
       const pk = ctx.zones ? parkingAt(ctx.zones, p, clock) : { k: 'none' };
-      const app = ctx.payApp || { name: 'PayByPhone' };
       const here = ctx.pbp ? nearestPayByPhone(ctx.pbp, p, 45 + acc) : null;          // pay bay on this street
       const nearby = here || (ctx.pbp ? nearestPayByPhone(ctx.pbp, p, 250) : null);   // nearest one at all
       const ps = here ? payStatus(here, clock) : null;
+      // car parks: one you may be standing in, and one worth suggesting when the street is permit-only
+      const cpIn = ctx.cps ? nearestPayByPhone(ctx.cps, p, 30 + Math.min(acc, 40)) : null;
+      const cpNear = cpIn || (ctx.cps ? nearestPayByPhone(ctx.cps, p, 60 + acc) : null);
+      const cpAlt = cpNear || (ctx.cps ? nearestPayByPhone(ctx.cps, p, 800) : null);
       const zoneLine = pk.z ? `ZONE ${pk.z.code} ${pk.z.zone}`.toUpperCase() : '';
       const edge = pk.z && pk.edge < 40 + acc ? ' Near a zone boundary: check the signs.' : '';
-      const codeLine = pt => `${app.name} ${pt.code}`.toUpperCase();
-      const payInfo = pt => `${app.name} location ${pt.code} (${pt.street}${pt.d > 45 ? `, ${Math.round(pt.d)} m away` : ''}${pt.max_stay_h ? `, max ${pt.max_stay_h} h` : ''}${priceText(pt.tariff) ? `, ${priceText(pt.tariff).toLowerCase()} in council data` : ''})`;
-      const pay = pt => pt ? { app, code: pt.code, street: pt.street } : null;
+      const appOf = pt => appFor(apps, pt.app);
+      const codeLine = pt => `${appOf(pt).name} ${pt.code}`.toUpperCase();
+      const payInfo = pt => `${appOf(pt).name} location ${pt.code} (${pt.street}${pt.d > 45 ? `, ${Math.round(pt.d)} m away` : ''}${pt.max_stay_h ? `, max ${pt.max_stay_h} h` : ''}${priceText(pt.tariff) ? `, ${priceText(pt.tariff).toLowerCase()} in council data` : ''})`;
+      const cpInfo = cp => `${cp.name} (${appOf(cp).name} ${cp.code}${cp.d > 30 ? `, ${Math.round(cp.d / 10) * 10} m away` : ''})`;
+      const pay = pt => pt ? { app: appOf(pt), code: pt.code, street: pt.street } : null;
+      const carPay = cp => cp ? { app: appOf(cp), code: cp.code, street: cp.name, carPark: cp } : null;
       if (here && ps.k === 'pay') return mk('P', {
         ...extra, kind: 'PARKING', word: 'PAY', road: codeLine(here), roadShort: codeLine(here),
         detail: `PAY UNTIL ${fmt(ps.until)}${here.max_stay_h ? ` - MAX ${here.max_stay_h} H` : ''}${priceText(here.tariff) ? ` - ${priceText(here.tariff)}` : ''}`,
         puckDetail: `${here.max_stay_h ? `MAX ${here.max_stay_h} H - ` : ''}TIL ${fmt(ps.until)}`,
-        instr: `Pay to park: ${payInfo(here)}. Resident permit holders can use permit bays.${edge}`, park: pk, pbp: here, pay: pay(here),
+        instr: `Pay to park: ${payInfo(here)}. Resident permit holders can use permit bays.${cpNear ? ` In the car park instead? ${cpInfo(cpNear)}.` : ''}${edge}`,
+        park: pk, pbp: here, pay: pay(here), alt: carPay(cpNear),
       });
       if (pk.k === 'controlled') return mk('P', {
         ...extra, kind: 'PARKING', word: pk.residents ? 'RESIDENTS' : 'PERMIT', road: zoneLine, roadShort: zoneLine,
         detail: `${pk.residents ? 'RESIDENTS ONLY' : 'PERMIT HOLDERS'} ${whenText(pk)}`,
         puckDetail: `${pk.residents ? 'RESIDENTS' : 'PERMIT'} TIL ${fmt(pk.until)}`,
-        instr: `Controlled hours: permit bays need a permit, single yellow lines mean no waiting.${nearby ? ` Nearest pay bay: ${payInfo(nearby)}.` : ''}${edge}`,
-        park: pk, pbp: nearby, pay: pay(nearby),
+        instr: `Controlled hours: permit bays need a permit, single yellow lines mean no waiting.${nearby ? ` Nearest pay bay: ${payInfo(nearby)}.` : ''}${cpAlt ? ` Nearest car park: ${cpInfo(cpAlt)}.` : ''}${edge}`,
+        park: pk, pbp: nearby, pay: pay(nearby), alt: carPay(cpAlt),
       });
       if (pk.k === 'free' || (here && ps.k === 'free')) {
         const until = here && ps.k === 'free' && ps.from ? (ps.from.today ? `UNTIL ${fmt(ps.from.min)}` : `UNTIL ${DAYS[ps.from.day]} ${fmt(ps.from.min)}`) : whenText(pk);
         return mk('F', {
           ...extra, kind: 'PARKING', word: 'FREE', road: zoneLine || codeLine(here), roadShort: zoneLine || codeLine(here),
           detail: `FREE ${until}`, puckDetail: until,
-          instr: `Bays and single yellow lines are free now. Double yellows, red routes and bay signs still apply.${here ? ` Pay from then with ${payInfo(here)}.` : ''}${edge}`,
-          park: pk, pbp: here || nearby, pay: pay(here || nearby),
+          instr: `Bays and single yellow lines are free now. Double yellows, red routes and bay signs still apply.${here ? ` Pay from then with ${payInfo(here)}.` : ''}${cpNear ? ` Car parks charge their own hours: ${cpInfo(cpNear)}.` : ''}${edge}`,
+          park: pk, pbp: here || nearby, pay: pay(here || nearby), alt: carPay(cpNear),
+        });
+      }
+      // no street rule known here, but you're at an app-paid car park
+      if (cpIn) {
+        const ms = cpIn.max_stay ? `MAX ${cpIn.max_stay.toUpperCase()}` : '';
+        return mk('P', {
+          ...extra, kind: 'CAR PARK', word: 'PAY', road: codeLine(cpIn), roadShort: codeLine(cpIn),
+          detail: [`PAY WITH ${appOf(cpIn).name.toUpperCase()}`, ms].filter(Boolean).join(' - '),
+          puckDetail: ms || `PAY WITH ${appOf(cpIn).name.toUpperCase()}`,
+          instr: `In the car park? ${cpInfo(cpIn)}.${cpIn.price ? ` ${cpIn.price}.` : ''}${cpIn.note ? ` ${cpIn.note}` : ''} On the street outside, check the signs.`,
+          park: pk, pay: carPay(cpIn),
         });
       }
     }
@@ -799,6 +827,7 @@
       park: o.park || null,
       pbp: o.pbp || null,
       pay: o.pay || null,
+      alt: o.alt || null,
       lane: o.lane || null,
       restr: o.restr || null, cam: o.cam || null, box: o.box || null, camOver: !!o.camOver,
       limit: null, mph: null, over: 0,
@@ -842,7 +871,7 @@
   const api = {
     LON0, LAT0, toM, toLL, loadFeatures, nearest, londonNow, inTerm, status, evaluate, makeTracker, puckMessage,
     fmt, fmtDist, bearing, angleDiff, parseTimings, loadZones, inZone, zoneStatus, parkingAt, whenText, loadRoads, matchRoad, shortName, DAYS,
-    parseHours, loadBusLanes, busStatus, matchBusLane, loadPayByPhone, nearestPayByPhone, parsePayHours, payStatus, priceText,
+    parseHours, loadBusLanes, busStatus, matchBusLane, loadPayByPhone, nearestPayByPhone, parsePayHours, payStatus, priceText, loadCarParks, appFor,
     parseConditional, loadRestrictions, nearestNamed, restrStatus, matchRestriction, loadCameras, loadYellowBoxes, boxDist, aheadOf,
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

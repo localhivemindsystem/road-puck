@@ -268,5 +268,37 @@ const boxes = E.loadYellowBoxes(JSON.parse(fs.readFileSync(path.join(__dirname, 
   check('Inside the box', inside.st === 'Y' && inside.detail.includes("DON'T STOP"), inside.detail);
 }
 
+// ---------- which parking app: PayByPhone street bays, RingGo car parks ----------
+console.log('\nParking apps');
+{
+  const apps = JSON.parse(fs.readFileSync(path.join(__dirname, '../docs/data/parking_apps.json'), 'utf8'));
+  const cps = E.loadCarParks(JSON.parse(fs.readFileSync(path.join(__dirname, '../docs/data/car_parks.geojson'), 'utf8')));
+  const cp = code => cps.find(c => c.code === code);
+  const park = (m, clk, dx = 0) => E.evaluate([], { x: m[0] + dx, y: m[1], acc: 8, speed: 0 }, clk, { zones, pbp, cps, apps, parked: true });
+  check('Street bays default to PayByPhone, car parks to RingGo', E.appFor(apps).name === 'PayByPhone' && E.appFor(apps, 'ringgo').name === 'RingGo');
+  check('Old single-app file still works', E.appFor({ name: 'PayByPhone' }, 'ringgo').name === 'PayByPhone');
+
+  // Kennington Park car park: no zone on the map there, so the car park is the answer
+  const kp = park(cp('39079').m, MON('10:00'));
+  check('In Kennington Park car park -> CAR PARK, RingGo 39079', kp.st === 'P' && kp.kind === 'CAR PARK' && kp.road === 'RINGGO 39079' && kp.pay.app.name === 'RingGo',
+    `${kp.word} | ${kp.road} | ${kp.detail}\n      puck: ${E.puckMessage(kp)}\n      ${kp.instr}`);
+  const ss = park(cp('828281').m, MON('10:00'));
+  check("Sainsbury's Streatham Common -> RingGo 828281, £4.40 a day", ss.st === 'P' && ss.pay.code === '828281' && ss.instr.includes('£4.40'), `${ss.road} | ${ss.detail}`);
+
+  // Cornwall Road: council pay bay (PayByPhone) is still the main answer, the RingGo car park is offered as well
+  const cw = park(cp('32106').m, MON('10:00'), 25);
+  check('Next to Cornwall Road car park, Mon 10:00 -> PayByPhone street bay first, RingGo car park as the other option',
+    cw.pay && cw.pay.app.name === 'PayByPhone' && cw.alt && cw.alt.app.name === 'RingGo' && cw.alt.code === '32106',
+    `${cw.word} | ${cw.road} | alt ${cw.alt && cw.alt.app.name} ${cw.alt && cw.alt.code}\n      ${cw.instr}`);
+
+  // Ferndale Road car park sits in zone B: permit street, car park suggested
+  const fr = park(cp('38925').m, MON('10:00'), 150);
+  check('150 m from Ferndale Road car park in zone B, Mon 10:00 -> PERMIT and the car park suggested',
+    (fr.word === 'PERMIT' || fr.word === 'RESIDENTS' || fr.word === 'PAY') && fr.alt && fr.alt.code === '38925',
+    `${fr.word} | ${fr.road} | alt ${fr.alt && fr.alt.code} (${fr.alt && Math.round(fr.alt.carPark.d)} m)\n      ${fr.instr}`);
+  const msg = E.puckMessage(kp).split('|');
+  check('Puck message for a car park has 10 fields and word PAY', msg.length === 10 && msg[1] === 'P' && msg[7] === 'PAY', E.puckMessage(kp));
+}
+
 console.log(fails ? `\n${fails} FAILED` : '\nAll checks passed');
 process.exit(fails ? 1 : 0);
