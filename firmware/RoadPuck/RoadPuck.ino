@@ -26,7 +26,7 @@
             O = open to traffic       K = all clear
             R = wrong way down a one-way street (flashing)
             E = no entry: one-way street ahead against you
-            P = parked, zone controlled (permit or pay)
+            P = parked, controlled: WORD is PAY (pay bay: ROAD = app + location code) or PERMIT
             F = parked, zone controls off (free)
             S = safety camera ahead (red when over the limit)
             Y = yellow box junction ahead
@@ -354,7 +354,8 @@ const char *DEMO[] = {
     "2|C|CAMBERWELL NEW RD||KEEP OUT - 24 HOURS|7|BUS LANE|CLOSED|30|1",
     "2|E|HEPWORTH RD|25|ONE WAY AGAINST YOU|6|ONE WAY STREET|NO ENTRY|20|0",
     "2|R|HEPWORTH RD|0|TURN AROUND SAFELY|6|ONE WAY STREET|WRONG WAY||0",
-    "2|P|ZONE S STOCKWELL||OR PAY TIL 17:30|5|PARKING|PERMIT||0",
+    "2|P|PAYBYPHONE 83349||MAX 4 H - TIL 18:30|5|PARKING|PAY||0",
+    "2|P|ZONE S STOCKWELL||PERMIT TIL 17:30|5|PARKING|PERMIT||0",
     "2|F|ZONE S STOCKWELL||UNTIL TUE 08:30|5|PARKING|FREE||0",
     "2|G|||WAITING FOR SIGNAL|60|ROAD PUCK|NO GPS||0",
 };

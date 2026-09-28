@@ -317,8 +317,51 @@
   }
 
   // ================= Pay-by-phone =================
+  // Council text, e.g. hours "08:30-18:30,Sa 08:30-13:00" / "8.30am - 6.30pm" / "10am - 12pm", days "Monday - Friday".
+  function parseClock(t) {
+    const m = String(t).trim().toLowerCase().match(/^(\d{1,2})(?:[:.](\d{2})|(\d{2}))?\s*(am|pm)?$/);
+    if (!m) return null;
+    let h = Number(m[1]), min = Number(m[2] || m[3] || 0);
+    if (m[4] === 'pm' && h < 12) h += 12;
+    if (m[4] === 'am' && h === 12) h = 0;
+    return h * 60 + min;
+  }
+  function parsePayHours(hours, days) {
+    const out = { rules: [], ok: true };
+    let base = [1, 2, 3, 4, 5];
+    const dm = String(days || '').match(/(mon|tue|wed|thu|fri|sat|sun)[a-z]*\s*-\s*(mon|tue|wed|thu|fri|sat|sun)/i);
+    if (dm) { const a = DAYN[dm[1].toLowerCase()], b = DAYN[dm[2].toLowerCase()]; base = []; for (let d = a; ; d = (d + 1) % 7) { base.push(d); if (d === b) break; } }
+    else out.ok = false;
+    for (let seg of String(hours || '').split(',')) {
+      seg = seg.trim();
+      let dd = base;
+      const sm = seg.match(/^(Mo|Tu|We|Th|Fr|Sa|Su)[a-z]*\s+/i);
+      if (sm) { dd = [OSM_DAY[sm[1][0].toUpperCase() + sm[1][1].toLowerCase()]]; seg = seg.slice(sm[0].length); }
+      const parts = seg.split('-');
+      const a = parts.length === 2 ? parseClock(parts[0]) : null, b = parts.length === 2 ? parseClock(parts[1]) : null;
+      if (a == null || b == null || a < 5 * 60 || b <= a) { out.ok = false; continue; }  // "0-17:30" and the like
+      if (sm) out.rules.push({ days: dd, ranges: [[a, b]] });
+      else { out.rules.push({ days: dd.filter(d => d !== 6 || !/sa/i.test(hours)), ranges: [[a, b]] }); }
+    }
+    if (!out.rules.length) out.ok = false;
+    return out;
+  }
+  function payStatus(pt, clock) {
+    if (!pt.rules.ok) return { k: 'unknown' };
+    for (const r of pt.rules.rules) if (r.days.includes(clock.day)) for (const [a, b] of r.ranges) if (clock.min >= a && clock.min < b) return { k: 'pay', until: b };
+    for (let i = 0; i < 8; i++) {
+      const day = (clock.day + i) % 7;
+      const starts = pt.rules.rules.filter(r => r.days.includes(day)).flatMap(r => r.ranges.map(x => x[0])).filter(a => i > 0 || a > clock.min);
+      if (starts.length) return { k: 'free', from: { day, min: Math.min(...starts), today: i === 0 } };
+    }
+    return { k: 'free' };
+  }
+  function priceText(tariff) {
+    const m = String(tariff || '').match(/^(\d+(?:\.\d+)?)ph$/i);
+    return m ? `\u00a3${Number(m[1]).toFixed(2).replace(/\.00$/, '')}/H` : '';
+  }
   function loadPayByPhone(geojson) {
-    return geojson.features.map(f => ({ ...f.properties, m: toM(f.geometry.coordinates[0], f.geometry.coordinates[1]) }));
+    return geojson.features.map(f => ({ ...f.properties, m: toM(f.geometry.coordinates[0], f.geometry.coordinates[1]), rules: parsePayHours(f.properties.hours, f.properties.days) }));
   }
   function nearestPayByPhone(points, p, maxD = 150) {
     let best = null;
@@ -662,24 +705,37 @@
     if (restrWarn) return restrWarn;
 
     // --- parked: what are the parking rules here? ---
-    if (ctx.parked && ctx.zones) {
-      const pk = parkingAt(ctx.zones, p, clock);
-      const pbp = ctx.pbp ? nearestPayByPhone(ctx.pbp, p) : null;
-      const payLine = pbp ? ` Pay-by-phone location ${pbp.code} (${pbp.street}, max ${pbp.max_stay_h} h).` : '';
-      if (pk.k === 'controlled' || pk.k === 'free') {
-        const z = pk.z, zoneLine = `ZONE ${z.code} ${z.zone}`.toUpperCase();
-        const edge = pk.edge < 40 + acc ? ' Near a zone boundary: check the signs.' : '';
-        if (pk.k === 'controlled') return mk('P', {
-          ...extra, kind: 'PARKING', word: pk.residents ? 'RESIDENTS' : 'PERMIT', road: zoneLine, roadShort: zoneLine,
-          detail: `${pk.residents ? 'RESIDENTS ONLY' : 'PERMIT OR PAY'} ${whenText(pk)}`,
-          puckDetail: `${pk.residents ? 'RESIDENTS' : 'OR PAY'} TIL ${fmt(pk.until)}`,
-          instr: `Controlled hours now. Single yellow lines: no waiting. Bays: permit or pay-by-phone.${payLine}${edge}`, park: pk, pbp,
-        });
+    if (ctx.parked && (ctx.zones || ctx.pbp)) {
+      const pk = ctx.zones ? parkingAt(ctx.zones, p, clock) : { k: 'none' };
+      const app = ctx.payApp || { name: 'PayByPhone' };
+      const here = ctx.pbp ? nearestPayByPhone(ctx.pbp, p, 45 + acc) : null;          // pay bay on this street
+      const nearby = here || (ctx.pbp ? nearestPayByPhone(ctx.pbp, p, 250) : null);   // nearest one at all
+      const ps = here ? payStatus(here, clock) : null;
+      const zoneLine = pk.z ? `ZONE ${pk.z.code} ${pk.z.zone}`.toUpperCase() : '';
+      const edge = pk.z && pk.edge < 40 + acc ? ' Near a zone boundary: check the signs.' : '';
+      const codeLine = pt => `${app.name} ${pt.code}`.toUpperCase();
+      const payInfo = pt => `${app.name} location ${pt.code} (${pt.street}${pt.d > 45 ? `, ${Math.round(pt.d)} m away` : ''}${pt.max_stay_h ? `, max ${pt.max_stay_h} h` : ''}${priceText(pt.tariff) ? `, ${priceText(pt.tariff).toLowerCase()} in council data` : ''})`;
+      const pay = pt => pt ? { app, code: pt.code, street: pt.street } : null;
+      if (here && ps.k === 'pay') return mk('P', {
+        ...extra, kind: 'PARKING', word: 'PAY', road: codeLine(here), roadShort: codeLine(here),
+        detail: `PAY UNTIL ${fmt(ps.until)}${here.max_stay_h ? ` - MAX ${here.max_stay_h} H` : ''}${priceText(here.tariff) ? ` - ${priceText(here.tariff)}` : ''}`,
+        puckDetail: `${here.max_stay_h ? `MAX ${here.max_stay_h} H - ` : ''}TIL ${fmt(ps.until)}`,
+        instr: `Pay to park: ${payInfo(here)}. Resident permit holders can use permit bays.${edge}`, park: pk, pbp: here, pay: pay(here),
+      });
+      if (pk.k === 'controlled') return mk('P', {
+        ...extra, kind: 'PARKING', word: pk.residents ? 'RESIDENTS' : 'PERMIT', road: zoneLine, roadShort: zoneLine,
+        detail: `${pk.residents ? 'RESIDENTS ONLY' : 'PERMIT HOLDERS'} ${whenText(pk)}`,
+        puckDetail: `${pk.residents ? 'RESIDENTS' : 'PERMIT'} TIL ${fmt(pk.until)}`,
+        instr: `Controlled hours: permit bays need a permit, single yellow lines mean no waiting.${nearby ? ` Nearest pay bay: ${payInfo(nearby)}.` : ''}${edge}`,
+        park: pk, pbp: nearby, pay: pay(nearby),
+      });
+      if (pk.k === 'free' || (here && ps.k === 'free')) {
+        const until = here && ps.k === 'free' && ps.from ? (ps.from.today ? `UNTIL ${fmt(ps.from.min)}` : `UNTIL ${DAYS[ps.from.day]} ${fmt(ps.from.min)}`) : whenText(pk);
         return mk('F', {
-          ...extra, kind: 'PARKING', word: 'FREE', road: zoneLine, roadShort: zoneLine,
-          detail: `FREE ${whenText(pk)}`,
-          puckDetail: whenText(pk),
-          instr: `Bays and single yellow lines are free now. Double yellows, red routes and bay signs still apply.${edge}`, park: pk, pbp,
+          ...extra, kind: 'PARKING', word: 'FREE', road: zoneLine || codeLine(here), roadShort: zoneLine || codeLine(here),
+          detail: `FREE ${until}`, puckDetail: until,
+          instr: `Bays and single yellow lines are free now. Double yellows, red routes and bay signs still apply.${here ? ` Pay from then with ${payInfo(here)}.` : ''}${edge}`,
+          park: pk, pbp: here || nearby, pay: pay(here || nearby),
         });
       }
     }
@@ -742,6 +798,7 @@
       f: f || null,
       park: o.park || null,
       pbp: o.pbp || null,
+      pay: o.pay || null,
       lane: o.lane || null,
       restr: o.restr || null, cam: o.cam || null, box: o.box || null, camOver: !!o.camOver,
       limit: null, mph: null, over: 0,
@@ -785,7 +842,7 @@
   const api = {
     LON0, LAT0, toM, toLL, loadFeatures, nearest, londonNow, inTerm, status, evaluate, makeTracker, puckMessage,
     fmt, fmtDist, bearing, angleDiff, parseTimings, loadZones, inZone, zoneStatus, parkingAt, whenText, loadRoads, matchRoad, shortName, DAYS,
-    parseHours, loadBusLanes, busStatus, matchBusLane, loadPayByPhone, nearestPayByPhone,
+    parseHours, loadBusLanes, busStatus, matchBusLane, loadPayByPhone, nearestPayByPhone, parsePayHours, payStatus, priceText,
     parseConditional, loadRestrictions, nearestNamed, restrStatus, matchRestriction, loadCameras, loadYellowBoxes, boxDist, aheadOf,
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

@@ -26,6 +26,7 @@ Inputs
       4 timed restriction (whens[whenIndex] is the OSM :conditional value).
   tools/source/osm_speed_cameras.json      speed/red-light cameras mapped in OpenStreetMap
   tools/source/tfl_yellow_boxes_raw.geojson TfL yellow box junctions (TfL_Yellow_box_junctions/FeatureServer/4)
+  data/lambeth/parking_app.json            which pay-by-phone app the borough uses and how to open it
   data/lambeth/restriction_checks.json     your on-the-ground checks: {"osm way id": {"verified": true, "note": ""}}
   tools/source/tfl_bus_lanes_raw.geojson
       TfL's "Bus Lanes" open data layer (services1.arcgis.com/YswvgzOodUvqkoCN/.../Bus_Lanes/FeatureServer/0),
@@ -277,7 +278,7 @@ def build():
     OUT.write_text(json.dumps(fc, indent=1))
     WEB.mkdir(parents=True, exist_ok=True)
     (WEB / "school_streets.geojson").write_text(json.dumps(fc, separators=(",", ":")))
-    for name in ("term_dates.json",):
+    for name in ("term_dates.json", "parking_app.json"):
         shutil.copy(ROOT / "data" / "lambeth" / name, WEB / name)
     print(f"{len(feats)} School Streets, {sum(f['properties']['placement'] == 'check' for f in feats)} to check")
 

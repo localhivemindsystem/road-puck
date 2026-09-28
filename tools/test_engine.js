@@ -168,6 +168,33 @@ const spot = pbp.find(x => x.on_street && E.parkingAt(zones, x.m, { day: 1, min:
 }
 
 
+{
+  const at = (min, day = 1) => E.evaluate([], { x: spot.m[0] + 10, y: spot.m[1], acc: 6, speed: 0 }, { day, min, term: true }, { zones, pbp, parked: true });
+  const pay = at(600), eve = at(1140), fri = at(1140, 5);
+  const ok1 = pay.st === 'P' && pay.word === 'PAY' && /PAY UNTIL \d\d:\d\d/.test(pay.detail);
+  const ok2 = eve.st === 'F' && /UNTIL TUE 08:30|UNTIL TUE/.test(eve.detail);
+  const ok3 = fri.st === 'F' && /MON/.test(fri.detail);
+  [ok1, ok2, ok3].forEach(ok => { if (!ok) fails++; });
+  console.log(`${ok1 ? 'PASS' : 'FAIL'}  Paid bay, Mon 10:00 -> ${pay.word} | ${pay.road} | ${pay.detail}\n      puck: ${E.puckMessage(pay)}`);
+  console.log(`${ok2 ? 'PASS' : 'FAIL'}  Same bay, Mon 19:00 -> ${eve.word} | ${eve.detail}`);
+  console.log(`${ok3 ? 'PASS' : 'FAIL'}  Same bay, Fri 19:00 -> ${eve.word} | ${fri.detail}`);
+  // controlled zone, no pay bay on this street -> PERMIT, with the nearest pay bay mentioned
+  let permit = null;
+  for (const z of zones) {
+    const [x0, y0, x1, y1] = z.bbox;
+    for (let i = 1; i < 30 && !permit; i++) for (let j = 1; j < 30 && !permit; j++) {
+      const q = [x0 + (x1 - x0) * i / 30, y0 + (y1 - y0) * j / 30];
+      if (E.parkingAt(zones, q, { day: 1, min: 600 }).z !== z) continue;
+      const nb = E.nearestPayByPhone(pbp, q, 250);
+      if (nb && nb.d > 80) permit = E.evaluate([], { x: q[0], y: q[1], acc: 6, speed: 0 }, { day: 1, min: 600, term: true }, { zones, pbp, parked: true });
+    }
+    if (permit) break;
+  }
+  const ok4 = permit && permit.word === 'PERMIT' && /Nearest pay bay: PayByPhone location \d+/.test(permit.instr);
+  if (!ok4) fails++;
+  console.log(`${ok4 ? 'PASS' : 'FAIL'}  Controlled zone, no pay bay on the street -> ${permit && permit.word} | ${permit && permit.detail}\n      ${permit && permit.instr}`);
+}
+
 // ---------- speed limits ----------
 console.log('\nSpeed limits');
 const check = (label, ok, info) => { if (!ok) fails++; console.log(`${ok ? 'PASS' : 'FAIL'}  ${label}${info ? `\n      ${info}` : ''}`); };

@@ -96,6 +96,11 @@ body[data-tab="drive"] #v-drive, body[data-tab="map"] #v-map, body[data-tab="dat
 @keyframes flash{0%,100%{background:var(--red)}50%{background:#8A120C}}
 .dash[data-st="X"],.dash[data-st="R"]{animation:flash .9s steps(1) infinite}
 @media (prefers-reduced-motion:reduce){.dash[data-st="X"],.dash[data-st="R"]{animation:none}}
+.paybox{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:10px}
+.paycode{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.paycode b{font-family:var(--block);font-weight:400;font-size:40px;letter-spacing:.04em;font-variant-numeric:tabular-nums;user-select:all}
+a.big{text-decoration:none;color:inherit}
+a.big.primary{color:var(--on-color)}
 .pk-zone{font-weight:800;font-size:clamp(24px,7cqi,32px);line-height:1.05;text-transform:uppercase}
 #parkCard{container-type:inline-size}
 .pill.controlled{background:var(--amber);color:var(--on-color)} .pill.free{background:#1E3A2A;color:#9FF0C4} .pill.none{background:var(--raise);color:var(--muted);border:1px solid var(--line)}
@@ -210,6 +215,13 @@ td.m{font-family:var(--mono);font-weight:500;font-size:14px;white-space:nowrap;f
         </div>
         <div class="pk-zone" id="pkZone">&mdash;</div>
         <p class="note" id="pkText" style="margin:0">Start GPS or simulate to see the parking rules where you are.</p>
+        <div class="paybox" id="payBox" hidden>
+          <div class="paycode"><span class="label" id="payApp">PayByPhone location</span><b id="payCode">&mdash;</b></div>
+          <div class="controls">
+            <button type="button" class="big" id="bCopy">Copy code<small id="bCopyHint">Paste it in the app</small></button>
+            <a class="big primary" id="bPayApp" href="#" target="_blank" rel="noopener">Open app<small id="bPayAppHint">PayByPhone</small></a>
+          </div>
+        </div>
       </div>
 
       <div class="card">
@@ -395,9 +407,9 @@ const S = {
 const track = E.makeTracker(4000);
 
 // ---------- load data ----------
-let gj, base, td, pz, bl, pb, rg, cg, yg;
+let gj, base, td, pz, bl, pb, rg, cg, yg, pa;
 try {
-  [gj, base, td, pz, bl, pb, rg, cg, yg] = await Promise.all(['data/school_streets.geojson', 'data/basemap.json', 'data/term_dates.json', 'data/parking_zones.geojson', 'data/bus_lanes.geojson', 'data/pay_by_phone.geojson', 'data/restrictions.geojson', 'data/cameras.geojson', 'data/yellow_boxes.geojson']
+  [gj, base, td, pz, bl, pb, rg, cg, yg, pa] = await Promise.all(['data/school_streets.geojson', 'data/basemap.json', 'data/term_dates.json', 'data/parking_zones.geojson', 'data/bus_lanes.geojson', 'data/pay_by_phone.geojson', 'data/restrictions.geojson', 'data/cameras.geojson', 'data/yellow_boxes.geojson', 'data/parking_app.json']
     .map(u => fetch(u).then(r => { if (!r.ok) throw new Error(u); return r.json(); })));
 } catch (e) {
   $('dRoad').textContent = 'Data files missing';
@@ -412,6 +424,7 @@ S.zones = E.loadZones(pz);
 S.restr = E.loadRestrictions(rg, S.feats, S.roads);
 S.cams = E.loadCameras(cg);
 S.boxes = E.loadYellowBoxes(yg);
+S.payApp = pa;
 S.bus = E.loadBusLanes(bl);
 S.pbp = E.loadPayByPhone(pb);
 S.zonePaths = S.zones.map(z => { const p = new Path2D(); z.polys.forEach(poly => poly.forEach(r => r.forEach(([x, y], i) => (i ? p.lineTo(x, y) : p.moveTo(x, y))))); return p; });
@@ -430,7 +443,7 @@ function update() {
   let pos = S.pos;
   if (pos && !S.sim && S.gpsWatch != null && Date.now() - S.lastFixAt > 15000) pos = { ...pos, acc: 999 };
   const parked = !!pos && (S.sim ? S.simParked : S.stillSince != null && Date.now() - S.stillSince > 15000);
-  const a = track(E.evaluate(S.feats, pos, clk, { roads: S.roads, zones: S.zones, bus: S.bus, pbp: S.pbp, restr: S.restr, cams: S.cams, boxes: S.boxes, parked, mem: S.mem, fixId: S.sim ? undefined : S.fixCount }), Date.now());
+  const a = track(E.evaluate(S.feats, pos, clk, { roads: S.roads, zones: S.zones, bus: S.bus, pbp: S.pbp, restr: S.restr, cams: S.cams, boxes: S.boxes, payApp: S.payApp, parked, mem: S.mem, fixId: S.sim ? undefined : S.fixCount }), Date.now());
   S.alert = a;
   renderDash(a, clk);
   renderPark(pos, clk);
@@ -470,6 +483,13 @@ function renderDash(a, clk) {
   } else { cm.className = 'chip'; cm.lastElementChild.textContent = 'GPS off'; }
 }
 
+$('bCopy').onclick = async () => {
+  const code = $('bCopy').dataset.code || '';
+  try { await navigator.clipboard.writeText(code); $('bCopyHint').textContent = 'Copied ' + code; }
+  catch (e) { const r = document.createRange(); r.selectNodeContents($('payCode')); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); $('bCopyHint').textContent = 'Selected: copy it'; }
+  setTimeout(() => ($('bCopyHint').textContent = 'Paste it in the app'), 4000);
+};
+
 // shrink the big word until it fits its column
 function fitWord(el) {
   el.style.fontSize = '';
@@ -479,26 +499,28 @@ function fitWord(el) {
 
 // ---------- parking card ----------
 function renderPark(pos, clk) {
-  const pill = $('pkPill'), zone = $('pkZone'), text = $('pkText');
-  if (!pos) { pill.className = 'pill none'; pill.textContent = 'No position'; zone.innerHTML = '&mdash;'; text.textContent = 'Start GPS or simulate to see the parking rules where you are.'; return; }
-  const pk = E.parkingAt(S.zones, [pos.x, pos.y], clk);
-  if (pk.k === 'none' || !pk.z) {
+  const pill = $('pkPill'), zone = $('pkZone'), text = $('pkText'), box = $('payBox');
+  if (!pos) { pill.className = 'pill none'; pill.textContent = 'No position'; zone.innerHTML = '&mdash;'; text.textContent = 'Start GPS or simulate to see the parking rules where you are.'; box.hidden = true; return; }
+  const a = E.evaluate([], { x: pos.x, y: pos.y, acc: pos.acc, speed: 0, heading: null }, clk, { zones: S.zones, pbp: S.pbp, payApp: S.payApp, parked: true, mem: {} });
+  if (a.st !== 'P' && a.st !== 'F') {
     pill.className = 'pill none'; pill.textContent = 'No zone data';
     zone.textContent = 'Not in a Lambeth parking zone';
-    text.textContent = 'No controlled-zone data here. Check yellow lines and signs.';
+    text.textContent = 'No controlled-zone or pay-by-phone data here. Check yellow lines and signs.';
+    box.hidden = true;
     return;
   }
-  const z = pk.z;
-  zone.textContent = `Zone ${z.code} \u00b7 ${z.zone}`;
-  const edge = pk.edge < 40 + Math.min(pos.acc || 0, 50) ? ' You are near the zone edge: check the signs.' : '';
-  const pbp = E.nearestPayByPhone(S.pbp, [pos.x, pos.y]);
-  const pay = pbp ? ` Nearest pay-by-phone: location ${pbp.code}, ${pbp.street} (${Math.round(pbp.d)} m, max ${pbp.max_stay_h} h, ${pbp.hours} ${pbp.days}).` : '';
-  if (pk.k === 'controlled') {
-    pill.className = 'pill controlled'; pill.textContent = 'Controlled ' + E.whenText(pk).toLowerCase();
-    text.textContent = `Hours: ${z.timings}. Single yellow lines: no waiting. Bays: permit or pay-by-phone.${pay}${edge}`;
-  } else {
-    pill.className = 'pill free'; pill.textContent = 'Free ' + E.whenText(pk).toLowerCase();
-    text.textContent = `Hours: ${z.timings}. Bays and single yellows are free now; double yellows, red routes and bay signs still apply.${pay}${edge}`;
+  pill.className = 'pill ' + (a.st === 'F' ? 'free' : 'controlled');
+  pill.textContent = a.detail.toLowerCase().replace(/^./, c => c.toUpperCase());
+  zone.textContent = a.word === 'PAY' ? `Pay to park \u00b7 ${a.park && a.park.z ? 'Zone ' + a.park.z.code : a.pbp.zone}` : a.park && a.park.z ? `Zone ${a.park.z.code} \u00b7 ${a.park.z.zone}` : a.road;
+  text.textContent = (a.park && a.park.z ? `Zone hours: ${a.park.z.timings}. ` : '') + a.instr;
+  box.hidden = !a.pay;
+  if (a.pay) {
+    $('payApp').textContent = `${a.pay.app.name} ${a.pay.app.code_label || 'location'}${a.pay.street ? ' \u00b7 ' + a.pay.street : ''}`;
+    $('payCode').textContent = a.pay.code;
+    $('bPayApp').href = a.pay.app.open_url || a.pay.app.web_url || '#';
+    $('bPayApp').firstChild.textContent = `Open ${a.pay.app.name}`;
+    $('bPayAppHint').textContent = 'Then enter the code';
+    $('bCopy').dataset.code = a.pay.code;
   }
 }
 

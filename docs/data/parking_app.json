@@ -1,0 +1,10 @@
+{
+  "borough": "Lambeth",
+  "name": "PayByPhone",
+  "code_label": "location",
+  "open_url": "https://mycars-paybyphone.onelink.me/6UdM/d9d9tyjp",
+  "web_url": "https://m2.paybyphone.co.uk/parking/start/",
+  "android_package": "com.paybyphone",
+  "source": "https://www.paybyphone.co.uk/locations/london-borough-of-lambeth",
+  "note": "Other boroughs use other apps (for example RingGo in Croydon). Add a file like this per borough."
+}

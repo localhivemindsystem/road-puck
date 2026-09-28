@@ -11,7 +11,7 @@ This first test area is **Lambeth**:
 | School Streets | 43 timed closures: OPEN / CLOSING / CLOSED / DON'T ENTER | Lambeth Council |
 | Bus lanes | 256 lanes: in force (CLOSED), starting soon (CLOSING), not in force (OPEN) | TfL open data |
 | One-way streets | WRONG WAY when driving against the flow, NO ENTRY when heading straight into one | OpenStreetMap |
-| Parking | When parked: zone, controlled hours (PERMIT) or free (FREE), nearest pay-by-phone code | Lambeth Council |
+| Parking | When parked: PAY (pay bay: app, location code, max stay, until when), PERMIT (permit holders, until when) or FREE (until when); the phone offers Copy code and Open PayByPhone | Lambeth Council, PayByPhone |
 | No entry | 360 bus gates, no-motor-vehicle filters, pedestrian zones and timed no-entry streets: NO ENTRY / DON'T ENTER (not yet checked on the ground) | OpenStreetMap |
 | Speed limit | The road's limit in a roundel on every screen; amber when you're over, flashing red when well over | OpenStreetMap |
 | Cameras | Speed and red-light cameras ahead: CAMERA (red if you're over) | OpenStreetMap |
@@ -80,7 +80,7 @@ For every closure the engine measures the distance to the closed stretch of road
 | **WRONG WAY** (flashing red) | Two GPS readings in a row on a one-way street, travelling against its direction. |
 | **NO ENTRY** | The street 25-45 m straight ahead is one-way against you (and isn't the road you're on). |
 | **BUS LANE: CLOSED / CLOSING / OPEN** | You're on a road with a bus lane, travelling its way, and it is in force / starts within 15 min / not in force. GPS can't tell lanes apart, so this tells you the rule, not that you're in the lane. |
-| **PERMIT / FREE** | Stopped for 15 seconds inside a controlled parking zone: are the zone's controls on now, and until when? |
+| **PAY / PERMIT / FREE** | Stopped for 15 seconds. PAY: a pay-by-phone bay within about 45 m is charging now (shows the app and location code, max stay, until when). PERMIT: the zone is controlled and there's no pay bay on this street (the phone names the nearest one). FREE: controls are off, and until when. |
 | **NO ENTRY** (bus gate, no motor vehicles, pedestrian zone, timed) | The restricted street is 30-80 m straight ahead, lined up with your direction, and in force. |
 | **DON'T ENTER** (restricted street) | Two GPS readings in a row on a restricted street while it's in force. |
 | **CAMERA** | A camera within 250-400 m ahead (further when faster), within 25 m of your line of travel. Red if you're over the limit. |
@@ -121,7 +121,11 @@ Run `node tools/test_engine.js` to check the rules against real Lambeth position
 - **Parking zones** come from Lambeth's CPZ timing zones layer, with boundaries simplified to about 4 m.
   During controlled hours single yellow lines mean no waiting and bays need a permit or pay-by-phone.
   The app doesn't know about double yellows, red routes or individual bay signs yet: always read the sign.
-  **Pay-by-phone** locations (510) come from Lambeth's ticket machine layer.
+  **Pay-by-phone** locations (510) come from Lambeth's ticket machine layer (council data dated January 2024), each with
+  its own charging hours, maximum stay and hourly rate code (e.g. `3ph` = £3 an hour). Prices change: the app shows the real price.
+  Lambeth uses **PayByPhone**; `data/lambeth/parking_app.json` says which app a borough uses and how to open it, so
+  other boroughs (RingGo in Croydon, for example) just need their own file. PayByPhone has no public link that opens
+  the app with the location filled in, so the phone offers **Copy code** then **Open PayByPhone**.
 - **No-entry restrictions** come from OpenStreetMap and are **not yet checked on the ground**: alerts say
   "CHECK THE SIGNS". After you've seen one, add it to `data/lambeth/restriction_checks.json` by its OSM way number
   (shown in the app's Data tab), e.g. `"123456789": {"verified": true, "note": "sign seen 1 Oct"}`, or
