@@ -16,7 +16,11 @@
   Tested to compile with Arduino-ESP32 core 3.3.10.
 
   Message format (UTF-8 text, fields split by '|'):
-    1|STATE|ROAD|DISTANCE_M|DETAIL|GPS_ACCURACY_M|KIND
+    2|STATE|ROAD|DISTANCE_M|DETAIL|GPS_ACCURACY_M|KIND|WORD|LIMIT_MPH|OVER
+    (version 1 messages, without the last three fields, still work)
+    WORD:   the big word; empty = chosen from STATE
+    LIMIT:  speed limit for the badge at the top; empty = no badge
+    OVER:   0 within the limit, 1 over (amber badge), 2 well over (flashing red badge)
     STATE:  X = don't enter (inside/at the closure while closed)
             C = closed ahead          W = closing soon
             O = open to traffic       K = all clear
@@ -24,8 +28,10 @@
             E = no entry: one-way street ahead against you
             P = parked, zone controlled (permit or pay)
             F = parked, zone controls off (free)
+            S = safety camera ahead (red when over the limit)
+            Y = yellow box junction ahead
             G = no GPS fix
-    e.g.    1|C|HACKFORD RD|180|UNTIL 09:15|8|SCHOOL STREET
+    e.g.    2|C|HACKFORD RD|180|UNTIL 09:15|8|SCHOOL STREET|CLOSED|20|0
 
   BOOT button: short press = brightness (bright / medium / night)
                hold 2 s    = demo mode on/off (cycles sample screens, no phone needed)
@@ -193,6 +199,25 @@ void drawWaiting() {
   gfx->flush();
 }
 
+// UK-style speed limit roundel at the top of the screen
+void drawBadge(int limit, int over) {
+  const int cx = LCD_W / 2, cy = 58, r = 38;
+  char num[8];
+  snprintf(num, sizeof num, "%d", limit);
+  uint16_t numCol = C_BLACK;
+  if (over >= 2) {
+    gfx->fillCircle(cx, cy, r, pulseOn ? C_RED : C_RED_DIM);
+    numCol = C_WHITE;
+  } else if (over == 1) {
+    gfx->fillCircle(cx, cy, r, C_AMBER);
+  } else {
+    gfx->fillCircle(cx, cy, r, C_RED);
+    gfx->fillCircle(cx, cy, r - 8, C_WHITE);
+  }
+  int base = cy + F_ROAD.capH / 2;
+  drawText(F_ROAD, num, cx - textWidth(F_ROAD, num) / 2, base, numCol);
+}
+
 void drawAlert() {
   const Alert &a = cur;
   char dist[16];
@@ -219,19 +244,23 @@ void drawAlert() {
     case 'C': col = C_RED; word = "CLOSED"; break;
     case 'E': col = C_RED; word = "NO ENTRY"; break;
     case 'W': col = C_AMBER; word = "CLOSING"; break;
+    case 'S': col = a.over ? C_RED : C_AMBER; word = "CAMERA"; break;
+    case 'Y': col = C_AMBER; word = "KEEP CLEAR"; break;
     case 'P': col = C_AMBER; word = "PERMIT"; break;
     case 'O': col = C_GREEN; word = "OPEN"; break;
     case 'F': col = C_GREEN; word = "FREE"; break;
     case 'G': col = C_AMBER; word = "NO GPS"; break;
     default:  col = C_GREEN; word = "CLEAR"; break;
   }
+  if (a.word[0]) word = a.word;
   gfx->fillScreen(C_BLACK);
-  bool strong = a.st == 'C' || a.st == 'E';
+  bool strong = a.st == 'C' || a.st == 'E' || (a.st == 'S' && a.over);
   ring(col, strong ? 14 : 8);
-  if (gps[0]) drawFit(gps, 54, C_GREY, &F_TINY);
-  drawFit(a.kind[0] ? a.kind : "ROAD PUCK", 100, col, &F_SMALL);
-  drawFit(word, 228, col, &F_STATUS, &F_BIG);
-  drawFit(a.road, 290, C_WHITE, &F_ROAD, &F_ROAD_S, &F_SMALL);
+  if (a.limit > 0) drawBadge(a.limit, a.over);
+  else if (gps[0]) drawFit(gps, 60, C_GREY, &F_TINY);
+  drawFit(a.kind[0] ? a.kind : "ROAD PUCK", 122, col, &F_SMALL, &F_TINY);
+  drawFit(word, 238, col, &F_STATUS, &F_BIG);
+  drawFit(a.road, 292, C_WHITE, &F_ROAD, &F_ROAD_S, &F_SMALL);
   if (dist[0]) {
     drawFit(dist, 378, C_WHITE, &F_BIG);
     drawFit(a.detail, 424, strong ? C_WHITE : C_GREY, &F_SMALL, &F_TINY);
@@ -246,15 +275,15 @@ bool parseMessage(const char *msg, Alert &out) {
   char buf[200];
   strncpy(buf, msg, sizeof buf - 1);
   buf[sizeof buf - 1] = 0;
-  char *fields[7] = {0};
+  char *fields[10] = {0};
   int n = 0;
   char *p = buf;
   fields[n++] = p;
-  while (*p && n < 7) {
+  while (*p && n < 10) {
     if (*p == '|') { *p = 0; fields[n++] = p + 1; }
     p++;
   }
-  if (n < 2 || strcmp(fields[0], "1") != 0) return false;
+  if (n < 2 || (strcmp(fields[0], "1") != 0 && strcmp(fields[0], "2") != 0)) return false;
   Alert a;
   a.st = fields[1][0];
   if (n > 2) strncpy(a.road, fields[2], sizeof a.road - 1);
@@ -262,13 +291,17 @@ bool parseMessage(const char *msg, Alert &out) {
   if (n > 4) strncpy(a.detail, fields[4], sizeof a.detail - 1);
   a.acc = (n > 5 && fields[5][0]) ? atoi(fields[5]) : -1;
   if (n > 6) strncpy(a.kind, fields[6], sizeof a.kind - 1);
+  if (n > 7) strncpy(a.word, fields[7], sizeof a.word - 1);
+  a.limit = (n > 8 && fields[8][0]) ? atoi(fields[8]) : -1;
+  a.over = (n > 9 && fields[9][0]) ? atoi(fields[9]) : 0;
   out = a;
   return true;
 }
 
 bool sameAlert(const Alert &a, const Alert &b) {
   return a.st == b.st && a.dist == b.dist && a.acc == b.acc && !strcmp(a.road, b.road) &&
-         !strcmp(a.detail, b.detail) && !strcmp(a.kind, b.kind);
+         !strcmp(a.detail, b.detail) && !strcmp(a.kind, b.kind) && !strcmp(a.word, b.word) &&
+         a.limit == b.limit && a.over == b.over;
 }
 
 class ServerCallbacks : public BLEServerCallbacks {
@@ -310,17 +343,20 @@ void startBluetooth() {
 
 // ================= demo mode (no phone needed) =================
 const char *DEMO[] = {
-    "1|K|NO CLOSURES NEARBY||NEAREST 1.2 KM|6|SCHOOL STREETS",
-    "1|W|STUDLEY RD|420|CLOSES IN 6 MIN|7|SCHOOL STREET",
-    "1|C|HACKFORD RD|180|UNTIL 09:15|8|SCHOOL STREET",
-    "1|X|HACKFORD RD|30|CLOSED UNTIL 09:15|8|SCHOOL STREET",
-    "1|O|SOUTH LAMBETH RD|250|NEXT CLOSURE 14:45|9|SCHOOL STREET",
-    "1|E|HEPWORTH RD|25|ONE WAY AGAINST YOU|6|ONE WAY STREET",
-    "1|R|HEPWORTH RD|0|TURN AROUND SAFELY|6|ONE WAY STREET",
-    "1|P|ZONE S STOCKWELL||OR PAY TIL 17:30|5|PARKING",
-    "1|F|ZONE S STOCKWELL||UNTIL TUE 08:30|5|PARKING",
-    "1|C|CAMBERWELL NEW RD||KEEP OUT - 24 HOURS|7|BUS LANE",
-    "1|G|||WAITING FOR SIGNAL|60|ROAD PUCK",
+    "2|K|NO CLOSURES AHEAD||NEAREST 1.2 KM|6|ROAD PUCK|CLEAR|20|0",
+    "2|W|STUDLEY RD|420|CLOSES IN 6 MIN|7|SCHOOL STREET|CLOSING|20|0",
+    "2|C|HACKFORD RD|180|UNTIL 09:15|8|SCHOOL STREET|CLOSED|20|0",
+    "2|X|HACKFORD RD|30|CLOSED UNTIL 09:15|8|SCHOOL STREET|DON'T ENTER||0",
+    "2|S|30 MPH LIMIT|180|CHECK YOUR SPEED|5|SPEED CAMERA|CAMERA|30|0",
+    "2|S|30 MPH LIMIT|120|SLOW DOWN|5|SPEED CAMERA|CAMERA|30|2",
+    "2|Y|BRIXTON RD|40|EXIT MUST BE CLEAR|5|YELLOW BOX JUNCTION|KEEP CLEAR|30|0",
+    "2|E|SOUTH LAMBETH PL|30|CHECK THE SIGNS|5|BUS GATE|NO ENTRY|20|0",
+    "2|C|CAMBERWELL NEW RD||KEEP OUT - 24 HOURS|7|BUS LANE|CLOSED|30|1",
+    "2|E|HEPWORTH RD|25|ONE WAY AGAINST YOU|6|ONE WAY STREET|NO ENTRY|20|0",
+    "2|R|HEPWORTH RD|0|TURN AROUND SAFELY|6|ONE WAY STREET|WRONG WAY||0",
+    "2|P|ZONE S STOCKWELL||OR PAY TIL 17:30|5|PARKING|PERMIT||0",
+    "2|F|ZONE S STOCKWELL||UNTIL TUE 08:30|5|PARKING|FREE||0",
+    "2|G|||WAITING FOR SIGNAL|60|ROAD PUCK|NO GPS||0",
 };
 const int DEMO_N = sizeof(DEMO) / sizeof(DEMO[0]);
 
@@ -401,7 +437,7 @@ void loop() {
   }
 
   // flash the DON'T ENTER screen
-  if (screen == SCR_ALERT && (cur.st == 'X' || cur.st == 'R') && now - pulseMs > 450) {
+  if (screen == SCR_ALERT && (cur.st == 'X' || cur.st == 'R' || cur.over >= 2) && now - pulseMs > 450) {
     pulseMs = now;
     pulseOn = !pulseOn;
     drawAlert();

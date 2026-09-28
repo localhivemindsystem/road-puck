@@ -12,6 +12,10 @@ This first test area is **Lambeth**:
 | Bus lanes | 256 lanes: in force (CLOSED), starting soon (CLOSING), not in force (OPEN) | TfL open data |
 | One-way streets | WRONG WAY when driving against the flow, NO ENTRY when heading straight into one | OpenStreetMap |
 | Parking | When parked: zone, controlled hours (PERMIT) or free (FREE), nearest pay-by-phone code | Lambeth Council |
+| No entry | 360 bus gates, no-motor-vehicle filters, pedestrian zones and timed no-entry streets: NO ENTRY / DON'T ENTER (not yet checked on the ground) | OpenStreetMap |
+| Speed limit | The road's limit in a roundel on every screen; amber when you're over, flashing red when well over | OpenStreetMap |
+| Cameras | Speed and red-light cameras ahead: CAMERA (red if you're over) | OpenStreetMap |
+| Yellow boxes | 92 box junctions: KEEP CLEAR as you approach | TfL open data |
 
 ![Puck screens](docs/puck-screens.png)
 
@@ -20,7 +24,7 @@ This first test area is **Lambeth**:
 | Folder | What it is |
 | --- | --- |
 | `docs/` | The phone app (served by GitHub Pages). `index.html` is built from `app/app.html`; `engine.js` is the alert logic. |
-| `data/lambeth/` | The dataset: `school_streets.geojson` (open it on GitHub to see it on a map), `term_dates.json`, and the street map `basemap.json`. |
+| `data/lambeth/` | The datasets (open any `.geojson` on GitHub to see it on a map): School Streets, bus lanes, parking zones, pay-by-phone, restrictions, cameras, yellow boxes, term dates and the street map with speed limits. |
 | `firmware/RoadPuck/` | Arduino sketch for the Waveshare ESP32-S3-Touch-AMOLED-1.75. |
 | `tools/` | Scripts that rebuild the data, the fonts and the app, plus the engine tests. |
 
@@ -77,7 +81,17 @@ For every closure the engine measures the distance to the closed stretch of road
 | **NO ENTRY** | The street 25-45 m straight ahead is one-way against you (and isn't the road you're on). |
 | **BUS LANE: CLOSED / CLOSING / OPEN** | You're on a road with a bus lane, travelling its way, and it is in force / starts within 15 min / not in force. GPS can't tell lanes apart, so this tells you the rule, not that you're in the lane. |
 | **PERMIT / FREE** | Stopped for 15 seconds inside a controlled parking zone: are the zone's controls on now, and until when? |
+| **NO ENTRY** (bus gate, no motor vehicles, pedestrian zone, timed) | The restricted street is 30-80 m straight ahead, lined up with your direction, and in force. |
+| **DON'T ENTER** (restricted street) | Two GPS readings in a row on a restricted street while it's in force. |
+| **CAMERA** | A camera within 250-400 m ahead (further when faster), within 25 m of your line of travel. Red if you're over the limit. |
+| **KEEP CLEAR** | A yellow box junction within 70 m ahead, or you're in it. |
+| **Speed badge** | Limit of the road you're on. Amber above the limit, flashing red at 10% + 2 mph over (22 in a 20, 35 in a 30). |
 | **NO GPS** | GPS accuracy worse than 100 m, or no fix for 15 seconds. |
+
+When several things apply, the puck shows the most urgent:
+DON'T ENTER / WRONG WAY, then CAMERA, then School Street CLOSED, then NO ENTRY ahead, then KEEP CLEAR,
+then a bus lane you're driving beside, then anything CLOSING, then parking, then OPEN / CLEAR.
+A bus lane that starts just ahead of you counts as CLOSED ahead.
 
 - **Look-ahead zone:** 250 m when slow, growing with speed up to 600 m, plus GPS error (capped at 50 m).
 - **"In front of you":** within 75° of your direction of travel. When you're stopped there's no direction, so every nearby closure counts; the engine errs on the side of warning.
@@ -108,6 +122,15 @@ Run `node tools/test_engine.js` to check the rules against real Lambeth position
   During controlled hours single yellow lines mean no waiting and bays need a permit or pay-by-phone.
   The app doesn't know about double yellows, red routes or individual bay signs yet: always read the sign.
   **Pay-by-phone** locations (510) come from Lambeth's ticket machine layer.
+- **No-entry restrictions** come from OpenStreetMap and are **not yet checked on the ground**: alerts say
+  "CHECK THE SIGNS". After you've seen one, add it to `data/lambeth/restriction_checks.json` by its OSM way number
+  (shown in the app's Data tab), e.g. `"123456789": {"verified": true, "note": "sign seen 1 Oct"}`, or
+  `"verified": false` to switch a wrong one off, then run `python3 tools/build_dataset.py`.
+  Timed restrictions that sit on a council School Street are dropped in favour of the council's times.
+- **Speed limits** are recorded for 92% of Lambeth's streets in OpenStreetMap (mostly 20 mph). Unknown limits show no badge.
+- **Cameras**: only the 23 mapped in OpenStreetMap so far. TfL says London has over 800 fixed speed and red-light
+  cameras, so expect gaps; a proper camera list is the next data job.
+- **Yellow boxes** come from TfL's yellow box junction layer (TfL roads and some borough roads).
 - **One-way streets** come from the OpenStreetMap street map. Roundabouts and contraflow cycle lanes aren't treated specially yet.
 - Street map © OpenStreetMap contributors, available under the
   [Open Database License](https://www.openstreetmap.org/copyright).
@@ -121,14 +144,15 @@ python3 tools/build_dataset.py   # dataset -> docs/data
 python3 tools/build_app.py       # app/app.html -> docs/index.html
 python3 tools/make_fonts.py      # TTF -> firmware/RoadPuck/fonts.h
 python3 tools/puck_preview.py    # docs/puck-screens.png
-node tools/test_engine.js        # 40 alert rule checks on real Lambeth data
+node tools/test_engine.js        # 50 alert rule checks on real Lambeth data
 ```
 
 ## Next
 
 - Bus gates and LTN camera filters (Lambeth publishes Digital Traffic Regulation Orders; the
   national D-TRO service is free to register for).
-- TfL red route stopping rules and yellow box junctions (both published by TfL with times).
+- TfL red route stopping rules (4,530 in the area, published by TfL with times) for the parking screen.
+- A fuller camera list, and average-speed camera zones.
 - Yellow lines and individual parking bays (in the D-TRO data).
 - More boroughs.
 

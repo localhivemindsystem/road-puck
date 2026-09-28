@@ -66,6 +66,21 @@ body[data-tab="drive"] #v-drive, body[data-tab="map"] #v-map, body[data-tab="dat
 .dash[data-st="O"] .band{background:var(--green);color:var(--on-color)}
 .dash[data-st="K"] .band{background:#173D28;color:#9FF0C4}
 .dash[data-st="G"] .band{background:#3A2C0C;color:var(--amber)}
+.band{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;column-gap:12px}
+.band .txt{min-width:0}
+.sbadge{grid-row:1;grid-column:2;margin-top:6px;width:clamp(64px,21cqi,100px);aspect-ratio:1;border-radius:50%;background:#fff;border:clamp(7px,2.4cqi,11px) solid #E0241B;display:flex;align-items:center;justify-content:center;color:#111;font-weight:800;font-size:clamp(28px,10cqi,48px);line-height:1;font-variant-numeric:tabular-nums;box-shadow:0 0 0 2px rgba(0,0,0,.35)}
+.sbadge[data-over="1"]{background:var(--amber);border-color:var(--amber);color:#111}
+.sbadge[data-over="2"]{background:var(--red);border-color:#fff;color:#fff;animation:flashb .9s steps(1) infinite}
+@keyframes flashb{50%{background:#8A120C}}
+@media (prefers-reduced-motion:reduce){.sbadge[data-over="2"]{animation:none}}
+.myspeed{grid-column:2;text-align:center;font-size:15px;letter-spacing:.08em;margin-top:4px}
+.dash[data-st="S"] .band{background:var(--amber);color:var(--on-color)}
+.dash[data-st="S"]{border-color:var(--amber)}
+.dash[data-st="S"].over .band{background:var(--red)}
+.dash[data-st="S"].over .detail,.dash[data-st="Y"] .detail{color:var(--ink)}
+.dash[data-st="S"].over{border-color:var(--red)}
+.dash[data-st="Y"] .band{background:#FFD60A;color:var(--on-color)}
+.dash[data-st="Y"]{border-color:#FFD60A}
 .dash[data-st="E"] .band{background:var(--red);color:var(--on-color)}
 .dash[data-st="E"]{border-color:var(--red)}
 .dash[data-st="E"] .detail{color:var(--ink)}
@@ -140,6 +155,7 @@ td{padding:9px 10px;border-top:1px solid var(--line);vertical-align:top}
 tbody tr{cursor:pointer}
 tbody tr:hover{background:var(--raise)}
 td.m{font-family:var(--mono);font-weight:500;font-size:14px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.note code{font-size:.85em;word-break:break-all}
 .pill{display:inline-block;padding:2px 8px;border-radius:6px;font-size:14px;letter-spacing:.08em;text-transform:uppercase}
 .pill.closed{background:var(--red);color:var(--on-color)} .pill.closing{background:var(--amber);color:var(--on-color)} .pill.open{background:#1E3A2A;color:#9FF0C4}
 .pill.check{background:#3A2C0C;color:var(--amber)}
@@ -166,8 +182,12 @@ td.m{font-family:var(--mono);font-weight:500;font-size:14px;white-space:nowrap;f
     <section class="view" id="v-drive" aria-label="Drive">
       <div class="dash" id="dash" data-st="N" aria-live="polite">
         <div class="band">
-          <div class="kind" id="dKind">Road Puck</div>
-          <div class="word" id="dWord">Ready</div>
+          <div class="txt">
+            <div class="kind" id="dKind">Road Puck</div>
+            <div class="word" id="dWord">Ready</div>
+          </div>
+          <div class="sbadge" id="dBadge" hidden aria-label="Speed limit"><span id="dLimit"></span></div>
+          <div class="myspeed" id="dSpeed" hidden></div>
         </div>
         <div class="body">
           <div class="road" id="dRoad">Tap Start GPS</div>
@@ -262,6 +282,9 @@ td.m{font-family:var(--mono);font-weight:500;font-size:14px;white-space:nowrap;f
         <button type="button" data-layer="school" aria-pressed="true"><i class="sw" style="background:var(--red)"></i>School Streets</button>
         <button type="button" data-layer="bus" aria-pressed="true"><i class="sw" style="background:repeating-linear-gradient(90deg,var(--red) 0 6px,transparent 6px 9px)"></i>Bus lanes</button>
         <button type="button" data-layer="parking" aria-pressed="true"><i class="sw" style="background:var(--amber)"></i>Parking zones</button>
+        <button type="button" data-layer="restr" aria-pressed="true"><i class="sw" style="background:repeating-linear-gradient(90deg,#FF3B30 0 4px,#fff 4px 6px)"></i>No entry</button>
+        <button type="button" data-layer="speed" aria-pressed="true"><i class="sw" style="background:#fff;box-shadow:inset 0 0 0 2px #E0241B;height:14px;width:14px;border-radius:50%"></i>Speed &amp; cameras</button>
+        <button type="button" data-layer="boxes" aria-pressed="true"><i class="sw" style="background:#FFD60A"></i>Yellow boxes</button>
         <button type="button" data-layer="oneway" aria-pressed="true"><i class="sw" style="background:#C9D0D8"></i>One-way arrows</button>
       </div>
       <div class="legend">
@@ -269,6 +292,7 @@ td.m{font-family:var(--mono);font-weight:500;font-size:14px;white-space:nowrap;f
         <span><i class="sw" style="background:var(--amber)"></i>Closing soon / zone controlled</span>
         <span><i class="sw" style="background:var(--green)"></i>Open / zone free</span>
         <span><i class="sw" style="background:var(--you)"></i>You + alert zone</span>
+        <span><i class="sw" style="background:repeating-linear-gradient(90deg,var(--red) 0 7px,#fff 7px 9px)"></i>No entry (ticks = not yet checked)</span>
       </div>
     </section>
 
@@ -289,6 +313,32 @@ td.m{font-family:var(--mono);font-weight:500;font-size:14px;white-space:nowrap;f
         <table>
           <thead><tr><th>ID</th><th>Road</th><th>School</th><th>Closed (school days)</th><th>Now</th><th>Placement</th><th>Lat, Lon</th><th>Check</th></tr></thead>
           <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="stats"><span><b id="nRestr">0</b>no-entry restrictions</span><span><b id="nRestrOn">0</b>in force now</span><span><b id="nRestrChecked">0</b>checked</span></div>
+        <p class="note" style="margin:0">Bus gates, streets closed to motor vehicles (including LTN filters), pedestrian zones and timed no-entry restrictions mapped in <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>. None has been checked on the ground yet, so alerts say &ldquo;check the signs&rdquo;. After a drive, mark each one in <code>data/lambeth/restriction_checks.json</code> by its OSM number: <code>true</code> once you've seen the sign, <code>false</code> to switch it off. Timed restrictions on the 43 council School Streets use the council's times instead. File: <a href="data/restrictions.geojson" target="_blank" rel="noopener">restrictions.geojson</a></p>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Type</th><th>Road</th><th>When</th><th>Now</th><th>Checked</th><th>OSM</th><th>Look</th></tr></thead>
+          <tbody id="restrRows"></tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="stats"><span><b id="nCams">0</b>safety cameras</span><span><b id="nBoxes">0</b>yellow boxes</span><span><b id="nLimits">0%</b>streets with a speed limit</span></div>
+        <p class="note" style="margin:0">Speed limits and cameras come from OpenStreetMap, which is kept up by volunteers: treat both as a guide and let the signs win. TfL says London has over 800 fixed speed and red-light cameras; only the ones mapped in OpenStreetMap are here, so there will be gaps. Yellow box junctions come from <a href="https://gis-tfl.opendata.arcgis.com/" target="_blank" rel="noopener">TfL open data</a>. Files: <a href="data/cameras.geojson" target="_blank" rel="noopener">cameras.geojson</a> &middot; <a href="data/yellow_boxes.geojson" target="_blank" rel="noopener">yellow_boxes.geojson</a></p>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Camera</th><th>Type</th><th>Limit</th><th>Lat, Lon</th><th>Look</th></tr></thead>
+          <tbody id="camRows"></tbody>
+        </table>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Yellow box junction</th><th>Lat, Lon</th><th>Look</th></tr></thead>
+          <tbody id="boxRows"></tbody>
         </table>
       </div>
       <div class="card">
@@ -340,14 +390,14 @@ const S = {
   follow: true, sel: null, alert: null, spokenKey: '',
   puck: { dev: null, chr: null, busy: false, queued: null, last: '', lastSent: 0 },
   zones: [], roads: null, mem: {}, stillSince: null, simParked: false,
-  layers: { school: true, bus: true, parking: true, oneway: true },
+  layers: { school: true, bus: true, parking: true, oneway: true, restr: true, speed: true, boxes: true },
 };
 const track = E.makeTracker(4000);
 
 // ---------- load data ----------
-let gj, base, td, pz, bl, pb;
+let gj, base, td, pz, bl, pb, rg, cg, yg;
 try {
-  [gj, base, td, pz, bl, pb] = await Promise.all(['data/school_streets.geojson', 'data/basemap.json', 'data/term_dates.json', 'data/parking_zones.geojson', 'data/bus_lanes.geojson', 'data/pay_by_phone.geojson']
+  [gj, base, td, pz, bl, pb, rg, cg, yg] = await Promise.all(['data/school_streets.geojson', 'data/basemap.json', 'data/term_dates.json', 'data/parking_zones.geojson', 'data/bus_lanes.geojson', 'data/pay_by_phone.geojson', 'data/restrictions.geojson', 'data/cameras.geojson', 'data/yellow_boxes.geojson']
     .map(u => fetch(u).then(r => { if (!r.ok) throw new Error(u); return r.json(); })));
 } catch (e) {
   $('dRoad').textContent = 'Data files missing';
@@ -359,6 +409,9 @@ S.terms = td.terms;
 S.base = decodeBase(base);
 S.roads = E.loadRoads(base);
 S.zones = E.loadZones(pz);
+S.restr = E.loadRestrictions(rg, S.feats, S.roads);
+S.cams = E.loadCameras(cg);
+S.boxes = E.loadYellowBoxes(yg);
 S.bus = E.loadBusLanes(bl);
 S.pbp = E.loadPayByPhone(pb);
 S.zonePaths = S.zones.map(z => { const p = new Path2D(); z.polys.forEach(poly => poly.forEach(r => r.forEach(([x, y], i) => (i ? p.lineTo(x, y) : p.moveTo(x, y))))); return p; });
@@ -377,7 +430,7 @@ function update() {
   let pos = S.pos;
   if (pos && !S.sim && S.gpsWatch != null && Date.now() - S.lastFixAt > 15000) pos = { ...pos, acc: 999 };
   const parked = !!pos && (S.sim ? S.simParked : S.stillSince != null && Date.now() - S.stillSince > 15000);
-  const a = track(E.evaluate(S.feats, pos, clk, { roads: S.roads, zones: S.zones, bus: S.bus, pbp: S.pbp, parked, mem: S.mem, fixId: S.sim ? undefined : S.fixCount }), Date.now());
+  const a = track(E.evaluate(S.feats, pos, clk, { roads: S.roads, zones: S.zones, bus: S.bus, pbp: S.pbp, restr: S.restr, cams: S.cams, boxes: S.boxes, parked, mem: S.mem, fixId: S.sim ? undefined : S.fixCount }), Date.now());
   S.alert = a;
   renderDash(a, clk);
   renderPark(pos, clk);
@@ -392,8 +445,14 @@ setInterval(update, 1000);
 // ---------- dashboard ----------
 function renderDash(a, clk) {
   $('dash').dataset.st = a.st;
+  $('dash').classList.toggle('over', !!(a.camOver || a.over));
   $('dKind').textContent = a.kind;
   $('dWord').textContent = a.word;
+  fitWord($('dWord'));
+  const bd = $('dBadge'), sp = $('dSpeed');
+  bd.hidden = !a.limit; sp.hidden = !a.limit || a.mph == null;
+  if (a.limit) { $('dLimit').textContent = a.limit; bd.dataset.over = a.over || 0; bd.setAttribute('aria-label', `Speed limit ${a.limit} mph`); }
+  if (!sp.hidden) sp.textContent = `YOU ${a.mph}`;
   $('dRoad').textContent = a.st === 'N' && S.sim ? 'TAP THE MAP' : a.road;
   $('dDist').textContent = a.dist != null && a.st !== 'K' ? E.fmtDist(a.dist) : '';
   $('dDetail').textContent = a.detail;
@@ -409,6 +468,13 @@ function renderDash(a, clk) {
     cm.className = 'chip ' + (acc != null && acc <= 30 ? 'on' : 'warn');
     cm.lastElementChild.textContent = acc != null ? `GPS \u00b1${acc} m` : 'Finding GPS';
   } else { cm.className = 'chip'; cm.lastElementChild.textContent = 'GPS off'; }
+}
+
+// shrink the big word until it fits its column
+function fitWord(el) {
+  el.style.fontSize = '';
+  let size = parseFloat(getComputedStyle(el).fontSize), n = 0;
+  while (el.scrollWidth > el.clientWidth + 1 && size > 36 && n++ < 30) { size *= 0.94; el.style.fontSize = size + 'px'; }
 }
 
 // ---------- parking card ----------
@@ -454,7 +520,8 @@ function fit(text, baseline, color, fonts) {
 function disc(color, r = 233) { pv.fillStyle = color; pv.beginPath(); pv.arc(233, 233, r, 0, Math.PI * 2); pv.fill(); }
 let puckFlash = true;
 function drawPuck(msg) {
-  const [v, st, road, dist, detail, acc, kind] = msg.split('|');
+  const [v, st, road, dist, detail, acc, kind, wordIn, limIn, overIn] = msg.split('|');
+  const limit = Number(limIn) || 0, over = Number(overIn) || 0;
   const distTxt = dist === '' ? '' : E.fmtDist(Number(dist));
   pv.clearRect(0, 0, 466, 466);
   disc('#000');
@@ -467,17 +534,25 @@ function drawPuck(msg) {
     fit(detail, 420, '#fff', [PF.SMALL, PF.TINY]);
     return;
   }
-  const col = { C: '#FF3B30', E: '#FF3B30', W: '#FFB020', P: '#FFB020', O: '#3DDC84', F: '#3DDC84', G: '#FFB020' }[st] || '#3DDC84';
-  const word = { C: 'CLOSED', E: 'NO ENTRY', W: 'CLOSING', O: 'OPEN', G: 'NO GPS', P: 'PERMIT', F: 'FREE' }[st] || 'CLEAR';
-  disc(col); disc('#000', 233 - (st === 'C' || st === 'E' ? 14 : 8));
-  if (acc !== '') fit(`GPS ${acc} M`, 54, '#9AA4AE', [PF.TINY]);
-  fit(kind || 'ROAD PUCK', 100, col, [PF.SMALL]);
-  fit(word, 228, col, [PF.STATUS, PF.BIG]);
-  fit(road, 290, '#fff', [PF.ROAD, PF.ROAD_S, PF.SMALL]);
-  if (distTxt) { fit(distTxt, 378, '#fff', [PF.BIG]); fit(detail, 424, st === 'C' || st === 'E' ? '#fff' : '#9AA4AE', [PF.SMALL, PF.TINY]); }
+  const col = { C: '#FF3B30', E: '#FF3B30', W: '#FFB020', P: '#FFB020', S: over ? '#FF3B30' : '#FFB020', Y: '#FFB020', O: '#3DDC84', F: '#3DDC84', G: '#FFB020' }[st] || '#3DDC84';
+  const word = wordIn || ({ C: 'CLOSED', E: 'NO ENTRY', W: 'CLOSING', O: 'OPEN', G: 'NO GPS', P: 'PERMIT', F: 'FREE', S: 'CAMERA', Y: 'KEEP CLEAR' }[st] || 'CLEAR');
+  const strong = st === 'C' || st === 'E' || (st === 'S' && over);
+  disc(col); disc('#000', 233 - (strong ? 14 : 8));
+  if (limit) {
+    const cy = 58, r = 38;
+    const fill = over >= 2 ? (puckFlash ? '#FF3B30' : '#8A120C') : over === 1 ? '#FFB020' : '#FF3B30';
+    pv.fillStyle = fill; pv.beginPath(); pv.arc(233, cy, r, 0, Math.PI * 2); pv.fill();
+    if (!over) { pv.fillStyle = '#fff'; pv.beginPath(); pv.arc(233, cy, r - 8, 0, Math.PI * 2); pv.fill(); }
+    pv.font = PF.ROAD; pv.fillStyle = over >= 2 ? '#fff' : '#000'; pv.textAlign = 'center'; pv.textBaseline = 'alphabetic';
+    pv.fillText(String(limit), 233, cy + capH(PF.ROAD) / 2);
+  } else if (acc !== '') fit(`GPS ${acc} M`, 60, '#9AA4AE', [PF.TINY]);
+  fit(kind || 'ROAD PUCK', 122, col, [PF.SMALL, PF.TINY]);
+  fit(word, 238, col, [PF.STATUS, PF.BIG]);
+  fit(road, 292, '#fff', [PF.ROAD, PF.ROAD_S, PF.SMALL]);
+  if (distTxt) { fit(distTxt, 378, '#fff', [PF.BIG]); fit(detail, 424, strong ? '#fff' : '#9AA4AE', [PF.SMALL, PF.TINY]); }
   else fit(detail, 350, 'CEPF'.includes(st) ? '#fff' : '#9AA4AE', [PF.ROAD_S, PF.SMALL, PF.TINY]);
 }
-setInterval(() => { if (S.alert && (S.alert.st === 'X' || S.alert.st === 'R')) { puckFlash = !puckFlash; drawPuck(E.puckMessage(S.alert)); } }, 450);
+setInterval(() => { if (S.alert && (S.alert.st === 'X' || S.alert.st === 'R' || S.alert.over >= 2)) { puckFlash = !puckFlash; drawPuck(E.puckMessage(S.alert)); } }, 450);
 
 // ---------- voice ----------
 let audio = null;
@@ -493,18 +568,29 @@ function beep(n) {
     }
   } catch (e) {}
 }
+let overSaid = 0;
+function speakOver(a) {  // one reminder when you first go well over the limit
+  if (!S.sound || a.over < 2 || !a.limit) { if (!a.over) overSaid = 0; return; }
+  if (overSaid === a.limit) return;
+  overSaid = a.limit;
+  try { speechSynthesis.speak(Object.assign(new SpeechSynthesisUtterance(`Speed limit ${a.limit}.`), { lang: 'en-GB' })); } catch (e) {}
+}
 function speak(a) {
+  speakOver(a);
   const key = a.key;
   if (key === S.spokenKey) return;
   const prev = S.spokenKey; S.spokenKey = key;
   if (!S.sound || !prev) return;
   const road = a.f ? a.f.road : a.road.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
-  const line = a.kind === 'BUS LANE'
+  const line = a.st === 'S' ? (a.kind === 'RED LIGHT CAMERA' ? 'Red light camera ahead.' : `Speed camera ahead.${a.cam && (a.cam.maxspeed || a.limit) ? ` ${a.cam.maxspeed || a.limit} limit.` : ''}`)
+    : a.st === 'Y' ? 'Yellow box junction ahead. Only enter if your exit is clear.'
+    : a.restr && (a.st === 'E' || a.st === 'X') ? `${a.kind.toLowerCase().replace(/^./, c => c.toUpperCase())} ahead. No entry.`
+    : a.kind === 'BUS LANE'
     ? { C: `Bus lane in force on ${road}. Keep out of the bus lane.`, W: `Bus lane on ${road} starts soon.` }[a.st]
     : { X: `Don't enter. ${road} is closed.`, C: `School street closed ahead. ${road}.`, W: `School street closing soon. ${road}.`,
         R: `Wrong way. ${road} is one way.`, E: `No entry ahead. ${road} is one way.` }[a.st];
   if (!line) return;
-  beep(a.st === 'X' || a.st === 'R' ? 3 : a.st === 'C' || a.st === 'E' ? 2 : 1);
+  beep(a.st === 'X' || a.st === 'R' ? 3 : a.st === 'C' || a.st === 'E' || a.st === 'S' ? 2 : 1);
   try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(line); u.lang = 'en-GB'; u.rate = 1.05; speechSynthesis.speak(u); } catch (e) {}
 }
 function setSound(on) {
@@ -671,14 +757,14 @@ function decodeBase(b) {
   const paths = [0, 1, 2, 3, 4, 5].map(() => new Path2D());
   const labels = [];
   for (const w of b.ways) {
-    const c = w[0], name = b.names[w[1]];
+    const c = w[0], name = b.names[w[1]], off = b.v >= 2 ? 4 : 3, limit = off === 4 ? w[3] : 0;
     let x = 0, y = 0; const pts = [];
-    for (let i = 3; i < w.length; i += 2) { x += w[i]; y += w[i + 1]; pts.push([x, y]); }
+    for (let i = off; i < w.length; i += 2) { x += w[i]; y += w[i + 1]; pts.push([x, y]); }
     pts.forEach(([px, py], i) => (i ? paths[c].lineTo(px, py) : paths[c].moveTo(px, py)));
     if (name && pts.length > 1) {
       let best = 0, bi = 0;
       for (let i = 0; i < pts.length - 1; i++) { const L = Math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]); if (L > best) { best = L; bi = i; } }
-      labels.push({ name: name.toUpperCase(), c, x: (pts[bi][0] + pts[bi + 1][0]) / 2, y: (pts[bi][1] + pts[bi + 1][1]) / 2, len: best, ang: Math.atan2(pts[bi + 1][1] - pts[bi][1], pts[bi + 1][0] - pts[bi][0]) });
+      labels.push({ name: name.toUpperCase(), c, limit, x: (pts[bi][0] + pts[bi + 1][0]) / 2, y: (pts[bi][1] + pts[bi + 1][1]) / 2, len: best, ang: Math.atan2(pts[bi + 1][1] - pts[bi][1], pts[bi + 1][0] - pts[bi][0]) });
     }
   }
   labels.sort((a, b) => a.c - b.c || b.len - a.len);
@@ -762,6 +848,26 @@ function paint() {
     }
     ctx.setLineDash([]); ctx.lineCap = 'round';
   }
+  // yellow boxes
+  if (S.layers.boxes && k > 0.15) {
+    for (const bx of S.boxes) for (const r of bx.rings) {
+      ctx.beginPath(); r.forEach(([x, y], i) => (i ? ctx.lineTo(sx(x), sy(y)) : ctx.moveTo(sx(x), sy(y)))); ctx.closePath();
+      ctx.fillStyle = 'rgba(255,214,10,.55)'; ctx.fill(); ctx.strokeStyle = '#FFD60A'; ctx.lineWidth = 2; ctx.stroke();
+    }
+    if (k <= 0.6) for (const bx of S.boxes) { ctx.fillStyle = '#FFD60A'; ctx.fillRect(sx(bx.c[0]) - 3, sy(bx.c[1]) - 3, 6, 6); }
+  }
+  // no entry / bus gates / timed restrictions
+  if (S.layers.restr && k > 0.12) {
+    ctx.lineCap = 'butt';
+    for (const r of S.restr) {
+      const st = E.restrStatus(r, clk).k, col = st === 'unknown' ? '#FFB020' : STC[st];
+      ctx.beginPath(); r.pts.forEach(([x, y], i) => (i ? ctx.lineTo(sx(x), sy(y)) : ctx.moveTo(sx(x), sy(y))));
+      ctx.setLineDash([]); ctx.strokeStyle = '#000'; ctx.lineWidth = k > 0.4 ? 10 : 7; ctx.stroke();
+      ctx.strokeStyle = col; ctx.lineWidth = k > 0.4 ? 6 : 4; ctx.stroke();
+      if (!r.verified) { ctx.setLineDash([2, 7]); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke(); }  // white ticks = not yet checked
+    }
+    ctx.setLineDash([]); ctx.lineCap = 'round';
+  }
   // closures
   const zoomed = k > 0.25;
   for (const f of (S.layers.school ? S.feats : [])) {
@@ -773,6 +879,17 @@ function paint() {
     }
     if (!zoomed) { ctx.fillStyle = col; ctx.beginPath(); ctx.arc(sx(f.anchorM[0]), sy(f.anchorM[1]), 4.5, 0, Math.PI * 2); ctx.fill(); }
     if (S.sel === f.id) { ctx.strokeStyle = '#5EC8FF'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(sx(f.anchorM[0]), sy(f.anchorM[1]), Math.max(18, 170 * k), 0, Math.PI * 2); ctx.stroke(); }
+  }
+  // speed limits and cameras
+  if (S.layers.speed) {
+    if (k > 0.55) drawLimits(k);
+    for (const q of S.cams) {
+      const x = sx(q.m[0]), y = sy(q.m[1]);
+      if (x < -20 || y < -20 || x > W + 20 || y > H + 20) continue;
+      ctx.fillStyle = '#07090B'; ctx.strokeStyle = '#FFB020'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x - 11, y - 8, 22, 16, 4) : ctx.rect(x - 11, y - 8, 22, 16); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#FFB020'; ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill();
+    }
   }
   // you
   if (S.pos) {
@@ -792,6 +909,22 @@ function paint() {
   ctx.fillText(step >= 1000 ? step / 1000 + ' KM' : step + ' M', 12, H - 28);
   ctx.fillStyle = '#6B7480'; ctx.textAlign = 'right'; ctx.font = '600 13px "Barlow Condensed", sans-serif';
   ctx.fillText('\u00a9 OPENSTREETMAP CONTRIBUTORS', W - 10, H - 10);
+}
+function drawLimits(k) {
+  const placed = [];
+  let n = 0;
+  for (const L of S.base.labels) {
+    if (!L.limit || (L.c >= 4 && k < 1.2)) continue;
+    const x = sx(L.x), y = sy(L.y);
+    if (x < 14 || y < 14 || x > W - 14 || y > H - 48 || (x > W - 90 && y < 420)) continue;  // keep clear of the buttons and scale
+    if (placed.some(p => Math.hypot(p[0] - x, p[1] - y) < 110)) continue;
+    placed.push([x, y]);
+    ctx.fillStyle = '#E0241B'; ctx.beginPath(); ctx.arc(x, y, 11, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x, y, 8, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#111'; ctx.font = '800 11px "Barlow Condensed", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(String(L.limit), x, y + 0.5);
+    if (++n > 60) break;
+  }
 }
 function drawOneWay(k) {
   ctx.fillStyle = 'rgba(201,208,216,.85)';
@@ -868,6 +1001,23 @@ function tap(px, py) {
   for (const f of S.feats) { const n = E.nearest(f, w); if (n.d < bd) { bd = n.d; best = f; } }
   if (S.sim && !best) { simMoveTo(w[0], w[1]); return; }
   if (S.sim && best && S.sel === best.id) { simMoveTo(w[0], w[1]); return; }
+  if (!best && S.layers.speed) {
+    const cam = S.cams.find(q => Math.hypot(q.m[0] - w[0], q.m[1] - w[1]) < 16 / V.k);
+    if (cam && !S.sim) { selectInfo('Safety camera', cam.type === 'red light' ? 'Red light camera' : 'Speed camera', cam.maxspeed ? `${cam.maxspeed} mph` : 'Limit not recorded', `From OpenStreetMap (${esc(cam.osm)}). Not checked on the ground.`, E.toLL(...cam.m), cam.osm); return; }
+  }
+  if (!best && S.layers.boxes) {
+    const bx = S.boxes.find(b => E.boxDist(b, w) < 8 / V.k);
+    if (bx && !S.sim) { selectInfo('Yellow box junction', bx.junction, 'Enter only if your exit is clear', 'Source: TfL. You may wait in the box to turn right if only oncoming traffic or right-turners stop you.', E.toLL(...bx.c)); return; }
+  }
+  if (!best && S.layers.restr) {
+    const hit = E.matchRestriction(S.restr, w, null, 12 / V.k);
+    if (hit && !S.sim) {
+      const r = hit.r, st = E.restrStatus(r, clock());
+      const now = st.k === 'closed' ? (st.allDay ? 'No entry now' : `No entry until ${E.fmt(st.until)}`) : st.k === 'closing' ? `No entry from ${E.fmt(st.at)}` : st.k === 'unknown' ? 'Times unknown' : st.why ? `Open (${st.why.toLowerCase()})` : 'Open now';
+      selectInfo(r.kind, r.road || '(unnamed street)', now, `${r.when ? esc(r.when) + '. ' : ''}${r.verified ? 'Checked on the ground.' : 'Not yet checked on the ground.'} OpenStreetMap way ${r.osm_way}.`, E.toLL(...r.pts[Math.floor(r.pts.length / 2)]), 'way/' + r.osm_way);
+      return;
+    }
+  }
   if (!best && S.layers.bus) {
     let hit = null, hd = 14 / V.k;
     for (const l of S.bus) for (const line of l.lines) for (let i = 0; i < line.length - 1; i++) {
@@ -894,6 +1044,20 @@ function selectLane(l) {
     <div><span class="pill ${st.k}">${esc(now)}</span></div>
     <div class="times">MON-FRI ${esc(l.mon_fri)} &middot; SAT ${esc(l.sat)} &middot; SUN ${esc(l.sun)}</div>
     <div class="note">${esc(l.vehicles)} only when in force. ${Math.round(l.length_m)} m long. Source: TfL.</div>`;
+  el.hidden = false;
+  el.querySelector('.x').onclick = () => select(null);
+  drawMap();
+}
+function selectInfo(label, title, pillText, note, ll, osm) {
+  S.sel = null;
+  const el = $('info'), [lon, lat] = ll;
+  el.innerHTML = `<button type="button" class="x" aria-label="Close">&times;</button>
+    <div class="label">${esc(label)}</div>
+    <h3>${esc(title)}</h3>
+    <div><span class="pill closing">${esc(pillText)}</span></div>
+    <div class="note">${note}</div>
+    <div class="row"><a href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lon}" target="_blank" rel="noopener">Street View</a>
+    ${osm ? `<a href="https://www.openstreetmap.org/${esc(osm)}" target="_blank" rel="noopener">OpenStreetMap</a>` : ''}</div>`;
   el.hidden = false;
   el.querySelector('.x').onclick = () => select(null);
   drawMap();
@@ -973,6 +1137,33 @@ function renderRows(clk) {
       <td class="m">${esc(z.timings)}</td><td>${now} <span class="note">${esc(E.whenText(st))}</span></td><td>${pz.features.find(f => f.properties.id === z.id)?.properties.check ? '<span class="pill check">CHECK</span>' : ''}</td></tr>`;
   }).join('');
   $('nZones').textContent = S.zones.length;
+  let rOn = 0;
+  const kindOrder = { 'BUS GATE': 0, 'NO MOTOR VEHICLES': 1, 'TIMED NO ENTRY': 2, 'PEDESTRIAN ZONE': 3 };
+  $('restrRows').innerHTML = S.restr.slice().sort((a, b) => kindOrder[a.kind] - kindOrder[b.kind] || (a.road || '~').localeCompare(b.road || '~')).map(r => {
+    const st = E.restrStatus(r, clk); if (st.k === 'closed') rOn++;
+    if (q && !((r.road || '') + ' ' + r.kind).toLowerCase().includes(q)) return '';
+    const [lon, lat] = E.toLL(...r.pts[Math.floor(r.pts.length / 2)]);
+    const now = st.k === 'closed' ? '<span class="pill closed">NO ENTRY</span>' : st.k === 'closing' ? '<span class="pill closing">SOON</span>' : st.k === 'unknown' ? '<span class="pill check">CHECK</span>' : '<span class="pill open">OPEN</span>';
+    return `<tr><td>${esc(r.kind)}</td><td>${esc(r.road || '(unnamed)')}</td><td class="m">${esc(r.when ? r.when.replace(/^no @ \(|\)$/g, '') : 'at all times')}</td><td>${now}</td>
+      <td>${r.verified ? 'Yes' : '<span class="pill check">NOT YET</span>'}</td><td class="m"><a href="https://www.openstreetmap.org/way/${r.osm_way}" target="_blank" rel="noopener">${r.osm_way}</a></td>
+      <td><a href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lon}" target="_blank" rel="noopener">Street View</a></td></tr>`;
+  }).join('');
+  $('nRestr').textContent = S.restr.length;
+  $('nRestrOn').textContent = rOn;
+  $('nRestrChecked').textContent = S.restr.filter(r => r.verified).length;
+  $('camRows').innerHTML = S.cams.map(c => {
+    const [lon, lat] = E.toLL(...c.m);
+    return `<tr><td class="m"><a href="https://www.openstreetmap.org/${esc(c.osm)}" target="_blank" rel="noopener">${esc(c.osm)}</a></td><td>${esc(c.type)}</td><td>${c.maxspeed ? c.maxspeed + ' mph' : '&mdash;'}</td>
+      <td class="m">${lat.toFixed(5)}, ${lon.toFixed(5)}</td><td><a href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lon}" target="_blank" rel="noopener">Street View</a></td></tr>`;
+  }).join('');
+  $('boxRows').innerHTML = S.boxes.slice().sort((a, b) => a.junction.localeCompare(b.junction)).map(b => {
+    if (q && !b.junction.toLowerCase().includes(q)) return '';
+    const [lon, lat] = E.toLL(...b.c);
+    return `<tr><td>${esc(b.junction)}</td><td class="m">${lat.toFixed(5)}, ${lon.toFixed(5)}</td><td><a href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lon}" target="_blank" rel="noopener">Street View</a></td></tr>`;
+  }).join('');
+  $('nCams').textContent = S.cams.length;
+  $('nBoxes').textContent = S.boxes.length;
+  $('nLimits').textContent = Math.round(100 * S.roads.ways.filter(w => w.limit).length / S.roads.ways.length) + '%';
   let busOn = 0;
   const hrs = t => String(t).replace(/24 Hours \(All Day\)/i, '24 hours').replace(/Not in Operation/i, '\u2014');
   $('busRows').innerHTML = S.bus.map((l, i) => [l, i]).sort((a, b) => a[0].road.localeCompare(b[0].road)).map(([l, i]) => {
@@ -1024,6 +1215,7 @@ if (embedded) {
   V.cx = reay.anchorM[0]; V.cy = reay.anchorM[1] - 120; V.k = 1.1; fitted = true;
   $('howto').querySelector('.label').textContent = 'Simulation \u00b7 Monday 08:40';
 }
+window.RoadPuck = { S, V, simMoveTo, setSim, setSimParked, update, E };  // for testing from the console
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { drawPuck(E.puckMessage(S.alert || E.evaluate(S.feats, null, clock()))); drawMap(); });
 update();
 })();

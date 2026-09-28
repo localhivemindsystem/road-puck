@@ -18,6 +18,15 @@ Inputs
   tools/source/lambeth_paybyphone_raw.geojson
       Lambeth Council's "CPZ Ticket Machines" layer (LambethCPZTicketMachines/MapServer/0): 510
       pay-by-phone locations with charging hours, days, maximum stay and tariff code.
+  tools/source/osm_streets_v2.json
+      Lambeth street network from OpenStreetMap (see tools/basemap_query.overpassql), processed in the
+      browser: ways as [class, nameIndex, oneway, maxspeed_mph, dx, dy, ...] in metres from lon -0.115,
+      lat 51.455; oneway=-1 streets reversed, roundabouts one-way. "restr" lists ways closed to private
+      cars: [wayIndex, type, whenIndex, osmWayId], type 1 no motor vehicles, 2 bus gate, 3 pedestrian zone,
+      4 timed restriction (whens[whenIndex] is the OSM :conditional value).
+  tools/source/osm_speed_cameras.json      speed/red-light cameras mapped in OpenStreetMap
+  tools/source/tfl_yellow_boxes_raw.geojson TfL yellow box junctions (TfL_Yellow_box_junctions/FeatureServer/4)
+  data/lambeth/restriction_checks.json     your on-the-ground checks: {"osm way id": {"verified": true, "note": ""}}
   tools/source/tfl_bus_lanes_raw.geojson
       TfL's "Bus Lanes" open data layer (services1.arcgis.com/YswvgzOodUvqkoCN/.../Bus_Lanes/FeatureServer/0),
       live lanes within lat 51.404-51.501, lon -0.158 to -0.072: borough and TfL roads.
@@ -27,6 +36,10 @@ Outputs
   data/lambeth/parking_zones.geojson    controlled parking zones with their hours
   data/lambeth/pay_by_phone.geojson     pay-by-phone locations
   data/lambeth/bus_lanes.geojson        bus lanes with hours, direction and permitted vehicles
+  data/lambeth/basemap.json             street map with speed limits and one-way directions (v2)
+  data/lambeth/restrictions.geojson     no entry, bus gates, pedestrian zones and timed restrictions
+  data/lambeth/cameras.geojson          speed and red-light cameras
+  data/lambeth/yellow_boxes.geojson     yellow box junctions
   docs/data/*                           copies the phone app loads
 """
 import json
@@ -146,6 +159,91 @@ def build_bus_lanes():
     print(f"{len(feats)} bus lanes")
 
 
+import math
+
+LON0, LAT0 = -0.115, 51.455
+KX, KY = math.cos(math.radians(LAT0)) * 111320, 110540
+UK_MPH = {5, 10, 15, 20, 30, 40, 50, 60, 70}
+RESTR_TYPES = {1: "NO MOTOR VEHICLES", 2: "BUS GATE", 3: "PEDESTRIAN ZONE", 4: "TIMED NO ENTRY"}
+OSM = "OpenStreetMap contributors (ODbL)"
+
+
+def way_points(w):
+    x = y = 0
+    pts = []
+    for i in range(4, len(w), 2):
+        x += w[i]; y += w[i + 1]
+        pts.append([round(LON0 + x / KX, 6), round(LAT0 + y / KY, 6)])
+    return pts
+
+
+def build_streets():
+    src = json.loads((ROOT / "tools" / "source" / "osm_streets_v2.json").read_text())
+    for w in src["ways"]:
+        if w[3] == 12:   # "20" tagged without units reads as 20 km/h; in London it means 20 mph
+            w[3] = 20
+        elif w[3] and w[3] not in UK_MPH:
+            w[3] = 0
+    base = {k: src[k] for k in ("v", "origin", "src", "fetched", "classes", "names", "ways", "boundary")}
+    base["format"] = "ways: [class, nameIndex, oneway, maxspeed_mph (0 = unknown), dx, dy, ...] metres, delta-encoded"
+    (ROOT / "data" / "lambeth" / "basemap.json").write_text(json.dumps(base, separators=(",", ":")))
+    shutil.copy(ROOT / "data" / "lambeth" / "basemap.json", WEB / "basemap.json")
+
+    checks_file = ROOT / "data" / "lambeth" / "restriction_checks.json"
+    if not checks_file.exists():
+        checks_file.write_text(json.dumps({"_help": "Add entries like \"123456\": {\"verified\": true, \"note\": \"sign seen 2026-10-01\"}. "
+                                                    "Use \"verified\": false to switch an alert off."}, indent=1))
+    checks = json.loads(checks_file.read_text())
+    feats = []
+    for wi, typ, when_i, osm_id in src["restr"]:
+        w = src["ways"][wi]
+        chk = checks.get(str(osm_id), {})
+        if chk.get("verified") is False:
+            continue
+        feats.append({
+            "type": "Feature",
+            "geometry": {"type": "LineString", "coordinates": way_points(w)},
+            "properties": {
+                "id": f"OSM-{osm_id}",
+                "osm_way": osm_id,
+                "kind": RESTR_TYPES[typ],
+                "road": src["names"][w[1]] or "",
+                "when": src["whens"][when_i] if when_i >= 0 else "",
+                "verified": bool(chk.get("verified")),
+                "note": chk.get("note", ""),
+                "source": OSM,
+            },
+        })
+    fc = {"type": "FeatureCollection", "name": "Access restrictions (OpenStreetMap, unverified)", "features": feats}
+    (ROOT / "data" / "lambeth" / "restrictions.geojson").write_text(json.dumps(fc, indent=1))
+    (WEB / "restrictions.geojson").write_text(json.dumps(fc, separators=(",", ":")))
+
+    cams = json.loads((ROOT / "tools" / "source" / "osm_speed_cameras.json").read_text())
+    cfeats = [{
+        "type": "Feature",
+        "geometry": {"type": "Point", "coordinates": [c["lon"], c["lat"]]},
+        "properties": {"id": c["osm"].replace("/", "-").upper(), "type": "red light" if c["type"] == "traffic_signals" else "speed",
+                       "maxspeed": c.get("maxspeed"), "direction": c.get("direction"), "osm": c["osm"], "source": OSM},
+    } for c in cams]
+    fc = {"type": "FeatureCollection", "name": "Safety cameras (OpenStreetMap)", "features": cfeats}
+    (ROOT / "data" / "lambeth" / "cameras.geojson").write_text(json.dumps(fc, indent=1))
+    (WEB / "cameras.geojson").write_text(json.dumps(fc, separators=(",", ":")))
+
+    yb = json.loads((ROOT / "tools" / "source" / "tfl_yellow_boxes_raw.geojson").read_text())
+    yfeats = [{
+        "type": "Feature",
+        "geometry": f["geometry"],
+        "properties": {"id": f"TFL-YBJ-{f['properties']['OBJECTID']}", "junction": f["properties"]["STREET_NAME"],
+                       "from": f["properties"].get("START_LOCATION"), "to": f["properties"].get("FINISH_LOCATION"),
+                       "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"},
+    } for f in yb["features"] if f.get("geometry")]
+    fc = {"type": "FeatureCollection", "name": "Yellow box junctions (TfL)", "features": yfeats}
+    (ROOT / "data" / "lambeth" / "yellow_boxes.geojson").write_text(json.dumps(fc, indent=1))
+    (WEB / "yellow_boxes.geojson").write_text(json.dumps(fc, separators=(",", ":")))
+    known = sum(1 for w in base["ways"] if w[3])
+    print(f"{len(base['ways'])} streets ({known} with a speed limit), {len(feats)} restrictions, {len(cfeats)} cameras, {len(yfeats)} yellow boxes")
+
+
 def build():
     rows = json.loads(SRC.read_text())
     feats = []
@@ -179,7 +277,7 @@ def build():
     OUT.write_text(json.dumps(fc, indent=1))
     WEB.mkdir(parents=True, exist_ok=True)
     (WEB / "school_streets.geojson").write_text(json.dumps(fc, separators=(",", ":")))
-    for name in ("basemap.json", "term_dates.json"):
+    for name in ("term_dates.json",):
         shutil.copy(ROOT / "data" / "lambeth" / name, WEB / name)
     print(f"{len(feats)} School Streets, {sum(f['properties']['placement'] == 'check' for f in feats)} to check")
 
@@ -189,3 +287,4 @@ if __name__ == "__main__":
     build_parking()
     build_pay_by_phone()
     build_bus_lanes()
+    build_streets()

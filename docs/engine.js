@@ -6,7 +6,11 @@
      School Streets  timed closures (lines)           -> X, C, W, O
      One-way streets from the street map (lines)      -> R (wrong way), E (no entry ahead)
      Bus lanes       TfL lines with hours + direction -> C (in force), W (starts soon), O (not in force), kind BUS LANE
-     Parking zones   CPZ polygons with hours          -> P (permit or pay now), F (free now)  -- only when parked */
+     Parking zones   CPZ polygons with hours          -> P (permit or pay now), F (free now)  -- only when parked
+     Restrictions    OSM bus gates, no motor vehicles, pedestrian zones, timed no entry -> X (on it), E (ahead), W, O
+     Cameras         OSM speed / red-light cameras    -> S
+     Yellow boxes    TfL box junctions                -> Y
+     Every alert also carries limit (mph), mph and over (0 ok, 1 over, 2 well over). */
 (function (root) {
   'use strict';
 
@@ -201,11 +205,12 @@
   function loadRoads(base) {
     const ways = [], grid = new Map();
     const key = (i, j) => i * 100000 + j;
+    const off = base.v >= 2 ? 4 : 3;  // v2 adds the speed limit
     base.ways.forEach((w, wi) => {
       const pts = [];
       let x = 0, y = 0;
-      for (let i = 3; i < w.length; i += 2) { x += w[i]; y += w[i + 1]; pts.push([x, y]); }
-      ways.push({ cls: w[0], name: base.names[w[1]] || '', oneway: w[2] === 1, pts });
+      for (let i = off; i < w.length; i += 2) { x += w[i]; y += w[i + 1]; pts.push([x, y]); }
+      ways.push({ cls: w[0], name: base.names[w[1]] || '', oneway: w[2] === 1, limit: off === 4 ? w[3] || 0 : 0, pts });
       for (let s = 0; s < pts.length - 1; s++) {
         const a = pts[s], b = pts[s + 1];
         const i0 = Math.floor(Math.min(a[0], b[0]) / CELL), i1 = Math.floor(Math.max(a[0], b[0]) / CELL);
@@ -241,6 +246,21 @@
         if (!best || score < best.score) best = { wi, s, d: r.d, bearing: brg, score, way: w };
       }
     }
+    return best;
+  }
+
+  // Nearest street that has a name (for labelling unnamed restrictions).
+  function nearestNamed(roads, p, maxD) {
+    const { grid, key, ways } = roads;
+    let best = null;
+    for (let i = Math.floor((p[0] - maxD) / CELL); i <= Math.floor((p[0] + maxD) / CELL); i++)
+      for (let j = Math.floor((p[1] - maxD) / CELL); j <= Math.floor((p[1] + maxD) / CELL); j++)
+        for (const [wi, s2] of grid.get(key(i, j)) || []) {
+          const w = ways[wi];
+          if (!w.name) continue;
+          const d = segDist(p, w.pts[s2], w.pts[s2 + 1]).d;
+          if (d <= maxD && (!best || d < best.d)) best = { name: w.name, d };
+        }
     return best;
   }
 
@@ -309,13 +329,140 @@
     return best;
   }
 
+  // ================= Access restrictions (OpenStreetMap) =================
+  // OSM conditional text, e.g. "no @ (Mo-Fr 08:15-09:15,14:45-15:45; SH off)".
+  const OSM_DAY = { Mo: 1, Tu: 2, We: 3, Th: 4, Fr: 5, Sa: 6, Su: 0 };
+  function parseConditional(text) {
+    const out = { rules: [], termOnly: false, ok: true };
+    if (!text) return out;
+    const parts = [...String(text).matchAll(/no\s*@\s*\(([^)]*)\)/gi)].map(m => m[1]);
+    if (!parts.length) { out.ok = false; return out; }
+    let lastDays = [0, 1, 2, 3, 4, 5, 6];
+    for (const part of parts) for (let rule of part.split(';')) {
+      rule = rule.trim();
+      if (!rule) continue;
+      if (/^SH\s+off$/i.test(rule)) { out.termOnly = true; continue; }
+      if (/^PH\s+off$/i.test(rule)) continue;
+      let days = null;
+      const dm = rule.match(/^((?:Mo|Tu|We|Th|Fr|Sa|Su)(?:\s*-\s*(?:Mo|Tu|We|Th|Fr|Sa|Su))?(?:\s*,\s*(?:Mo|Tu|We|Th|Fr|Sa|Su)(?:\s*-\s*(?:Mo|Tu|We|Th|Fr|Sa|Su))?)*)/);
+      if (dm) {
+        days = [];
+        for (const piece of dm[1].split(',')) {
+          const [a, b] = piece.split('-').map(x => OSM_DAY[x.trim()]);
+          if (b === undefined) days.push(a);
+          else for (let d = a; ; d = (d + 1) % 7) { days.push(d); if (d === b) break; }
+        }
+        rule = rule.slice(dm[0].length);
+      }
+      const ranges = [...rule.matchAll(/(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})/g)].map(m => [Number(m[1]) * 60 + Number(m[2]), Number(m[3]) * 60 + Number(m[4])]);
+      if (!ranges.length) { if (days) out.rules.push({ days, ranges: [[0, 1440]] }); else out.ok = false; continue; }
+      out.rules.push({ days: days || lastDays, ranges });
+      if (days) lastDays = days;
+    }
+    if (!out.rules.length) out.ok = false;
+    return out;
+  }
+
+  function loadRestrictions(geojson, schoolFeats, roads) {
+    const list = geojson.features.map(f => {
+      const p = f.properties;
+      const pts = f.geometry.coordinates.map(([lon, lat]) => toM(lon, lat));
+      let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+      pts.forEach(([x, y]) => { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); });
+      return { ...p, pts, bbox: [x0, y0, x1, y1], cond: parseConditional(p.when) };
+    });
+    // Council School Street data wins: drop OSM timed restrictions that sit on a School Street.
+    if (schoolFeats) for (const r of list) {
+      if (r.kind !== 'TIMED NO ENTRY') continue;
+      const mid = r.pts[Math.floor(r.pts.length / 2)];
+      const hit = schoolFeats.find(f => nearest(f, mid).d < 60);
+      if (hit) r.school = hit.id;
+    }
+    if (roads) for (const r of list) {
+      if (r.road) continue;
+      const n = nearestNamed(roads, r.pts[Math.floor(r.pts.length / 2)], 80);
+      if (n) r.road = `Near ${n.name}`;
+    }
+    return list.filter(r => !r.school);
+  }
+
+  function restrStatus(r, clock) {
+    if (!r.when) return { k: 'closed', allDay: true };
+    if (!r.cond.ok) return { k: 'unknown' };
+    if (r.cond.termOnly && !clock.term) return { k: 'open', why: 'SCHOOL HOLIDAYS' };
+    const today = r.cond.rules.filter(x => x.days.includes(clock.day)).flatMap(x => x.ranges);
+    for (const [a, b] of today) if (clock.min >= a && clock.min < b) return { k: 'closed', until: b, allDay: a === 0 && b === 1440 };
+    const next = today.map(w => w[0]).filter(a => a > clock.min).sort((a, b) => a - b)[0];
+    if (next !== undefined && next - clock.min <= 30) return { k: 'closing', at: next, inMin: next - clock.min };
+    return { k: 'open', next };
+  }
+
+  // Nearest restricted way to point p that lines up with the heading (restrictions apply both ways).
+  function matchRestriction(list, p, heading, maxD) {
+    let best = null;
+    for (const r of list) {
+      const b = r.bbox;
+      if (p[0] < b[0] - maxD || p[0] > b[2] + maxD || p[1] < b[1] - maxD || p[1] > b[3] + maxD) continue;
+      for (let i = 0; i < r.pts.length - 1; i++) {
+        const q = segDist(p, r.pts[i], r.pts[i + 1]);
+        if (q.d > maxD) continue;
+        if (heading != null) { const ad = angleDiff(heading, bearing(r.pts[i], r.pts[i + 1])); if (Math.min(ad, 180 - ad) > 35) continue; }
+        if (!best || q.d < best.d) best = { r, d: q.d };
+      }
+    }
+    return best;
+  }
+
+  // ================= Cameras and yellow boxes =================
+  function loadCameras(geojson) {
+    return geojson.features.map(f => ({ ...f.properties, m: toM(f.geometry.coordinates[0], f.geometry.coordinates[1]) }));
+  }
+  function loadYellowBoxes(geojson) {
+    return geojson.features.map(f => {
+      const g = f.geometry;
+      const rings = (g.type === 'Polygon' ? [g.coordinates] : g.coordinates).map(poly => poly[0].map(([lon, lat]) => toM(lon, lat)));
+      const all = rings.flat();
+      const c = [all.reduce((s, q) => s + q[0], 0) / all.length, all.reduce((s, q) => s + q[1], 0) / all.length];
+      const first = String(f.properties.junction || '').split('/')[0].replace(/\(.*?\)/g, '').trim();
+      return { ...f.properties, rings, c, short: shortName(first.replace(/\bRD\b/g, 'Road').replace(/\bSTH\b/g, 'South').replace(/\bST\b/g, 'Street')) };
+    });
+  }
+  function boxDist(bx, p) {
+    if (bx.rings.some(r => inRing(p, r))) return 0;
+    let d = Infinity;
+    for (const r of bx.rings) for (let i = 0; i < r.length - 1; i++) d = Math.min(d, segDist(p, r[i], r[i + 1]).d);
+    return d;
+  }
+
+  // Something in front of us: distance, and how far off our line of travel it is.
+  function aheadOf(p, heading, q) {
+    const d = Math.hypot(q[0] - p[0], q[1] - p[1]);
+    const ang = angleDiff(heading, bearing(p, q));
+    return { d, ang, lateral: d * Math.sin(Math.min(ang, 90) * Math.PI / 180) };
+  }
+
   // ================= the decision =================
   // pos = { x, y (metres), acc (m), speed (m/s or null), heading (deg or null) }
   // ctx = { roads, zones, parked, mem }  (all optional; mem is a {} the caller keeps between calls)
-  const SEVERITY = { N: 0, K: 1, G: 1, F: 1, P: 1, O: 2, W: 3, C: 4, E: 4, X: 5, R: 5 };
+  const SEVERITY = { N: 0, K: 1, G: 1, F: 1, P: 1, O: 2, W: 3, Y: 3, C: 4, E: 4, S: 4, X: 5, R: 5 };
 
   function evaluate(feats, pos, clock, ctx = {}) {
-    const mem = ctx.mem || {};
+    const mem = ctx.mem || (ctx.mem = {});
+    const a = decide(feats, pos, clock, ctx, mem);
+    // speed limit of the road we're on, and whether we're over it
+    if (pos && pos.acc <= 100 && ctx.roads && a.st !== 'P' && a.st !== 'F') {
+      const moving = pos.speed != null && pos.speed >= 2.5 && pos.heading != null;
+      const here = matchRoad(ctx.roads, [pos.x, pos.y], moving ? pos.heading : null, Math.max(15, Math.min(pos.acc || 0, 25)));
+      if (here && here.way.limit) { mem.limit = here.way.limit; mem.limitMiss = 0; }
+      else if ((mem.limitMiss = (mem.limitMiss || 0) + 1) > 3) mem.limit = 0;  // keep the last limit briefly through gaps
+      a.limit = mem.limit || null;
+      a.mph = pos.speed != null ? Math.round(pos.speed * 2.23694) : null;
+      a.over = a.limit && a.mph != null && moving ? (a.mph >= a.limit * 1.1 + 2 ? 2 : a.mph > a.limit ? 1 : 0) : 0;
+    }
+    return a;
+  }
+
+  function decide(feats, pos, clock, ctx, mem) {
     if (!pos) return mk('N', { word: 'READY', road: 'TAP START GPS', detail: '', instr: 'Mount the phone, then tap START GPS.' });
     if (pos.acc > 100) return mk('G', { word: 'NO GPS', road: '', detail: `GPS ±${Math.round(pos.acc)} M`, puckDetail: 'WAITING FOR SIGNAL', instr: 'Waiting for a better GPS signal.', acc: pos.acc });
 
@@ -367,6 +514,53 @@
       instr: "You're driving against a one-way street.",
     });
 
+    // --- restricted street: already on it while it's in force ---
+    let rAt = null, rAhead = null;
+    if (ctx.restr && moving) {
+      const onIt = matchRestriction(ctx.restr, p, pos.heading, 10 + Math.min(pos.acc || 0, 15));
+      if (onIt && restrStatus(onIt.r, clock).k === 'closed') rAt = onIt;
+      const h = pos.heading * Math.PI / 180;
+      for (const look of [30, 55, 80]) {
+        const hit = matchRestriction(ctx.restr, [p[0] + Math.sin(h) * look, p[1] + Math.cos(h) * look], pos.heading, 12);
+        if (hit && (!onIt || hit.r.id !== onIt.r.id)) { rAhead = { ...hit, dist: look }; break; }
+        if (hit && onIt && hit.r.id === onIt.r.id && restrStatus(hit.r, clock).k !== 'closed') { rAhead = { ...hit, dist: 0 }; break; }
+      }
+    }
+    if (ctx.fixId === undefined || ctx.fixId !== mem.fixId2) {
+      mem.fixId2 = ctx.fixId;
+      mem.rAt = rAt ? (mem.rAt || 0) + 1 : 0;
+    }
+    if (rAt && mem.rAt >= 2) {
+      const r = rAt.r, st = restrStatus(r, clock);
+      return mk('X', {
+        ...extra, kind: r.kind, word: "DON'T ENTER", road: (r.road || r.kind).toUpperCase(), roadShort: shortName(r.road || r.kind), dist: 0,
+        detail: st.allDay ? (r.verified ? 'AT ALL TIMES' : 'CHECK THE SIGNS') : `UNTIL ${fmt(st.until)}`,
+        instr: `You're on a restricted street (${r.kind.toLowerCase()}). Leave at the next safe turning.${r.verified ? '' : ' Not yet verified: check the signs.'}`, restr: r,
+      });
+    }
+
+    // --- safety camera ahead ---
+    if (ctx.cams && moving) {
+      const camR = Math.min(400, Math.max(250, speed * 20)) + acc;
+      let cam = null;
+      for (const q of ctx.cams) {
+        const a = aheadOf(p, pos.heading, q.m);
+        if (a.d > camR || a.d < 15 || a.ang > 45 || a.lateral > 25 + acc) continue;
+        if (!cam || a.d < cam.d) cam = { q, d: a.d };
+      }
+      if (cam) {
+        const red = cam.q.type === 'red light', lim = cam.q.maxspeed || mem.limit || null;
+        const mph = Math.round(speed * 2.23694), over = lim && mph > lim;
+        return mk('S', {
+          ...extra, kind: red ? 'RED LIGHT CAMERA' : 'SPEED CAMERA', word: 'CAMERA',
+          road: lim ? `${lim} MPH LIMIT` : 'SPEED CAMERA', roadShort: lim ? `${lim} MPH LIMIT` : 'CHECK SPEED', dist: cam.d,
+          detail: red ? 'STOP ON RED' : over ? `SLOW DOWN - YOU'RE AT ${mph}` : 'CHECK YOUR SPEED',
+          puckDetail: red ? 'STOP ON RED' : over ? 'SLOW DOWN' : 'CHECK YOUR SPEED',
+          instr: red ? 'Red light camera ahead.' : `Speed camera ahead${lim ? `, ${lim} mph limit` : ''}.`, cam: cam.q, camOver: !!over,
+        });
+      }
+    }
+
     // --- School Street ahead ---
     const near = c.filter(r => r.d <= warnR && r.ahead !== false);
     const closed = near.find(r => r.now.k === 'closed' || r.arrive.k === 'closed');
@@ -380,20 +574,8 @@
         instr: `Don't turn into ${closed.f.road}.`,
       });
     }
-    if (noEntry && mem.noEntry >= 2) return mk('E', {
-      ...extra, kind: 'ONE WAY STREET', word: 'NO ENTRY', road: (noEntry.way.name || 'ONE-WAY STREET').toUpperCase(),
-      roadShort: shortName(noEntry.way.name || 'ONE-WAY STREET'), dist: noEntry.look,
-      detail: 'ONE-WAY AGAINST YOU', puckDetail: 'ONE WAY AGAINST YOU',
-      instr: `Don't go straight on into ${noEntry.way.name || 'the one-way street'}.`,
-    });
-    const closing = near.find(r => r.now.k === 'closing');
-    if (closing) return mk('W', {
-      ...extra, f: closing.f, dist: closing.d, word: 'CLOSING',
-      detail: `CLOSES IN ${closing.now.inMin} MIN`,
-      instr: `Avoid ${closing.f.road} from ${fmt(closing.now.at)}.`,
-    });
-
     // --- bus lanes on this road, in this direction ---
+    let busWarn = null, busAlong = null;
     if (ctx.bus && moving) {
       const maxD = 15 + Math.min(pos.acc || 0, 15);
       const h = pos.heading * Math.PI / 180;
@@ -404,20 +586,80 @@
         const l = hit.l, st = busStatus(l, clock), road = l.road.toUpperCase(), rs = shortName(l.road);
         const who = l.vehicles.replace(/ and /i, ', ').toUpperCase();
         const dist = on ? null : 60;
-        if (st.k === 'closed') return mk('C', {
-          ...extra, kind: 'BUS LANE', word: 'CLOSED', road, roadShort: rs, dist,
-          detail: st.allDay ? 'IN FORCE 24 HOURS' : `IN FORCE UNTIL ${fmt(st.until)}`,
-          puckDetail: st.allDay ? 'KEEP OUT - 24 HOURS' : `KEEP OUT TIL ${fmt(st.until)}`,
-          instr: `Stay out of the bus lane. ${who} only.`, lane: l,
-        });
-        if (st.k === 'closing') return mk('W', {
+        if (st.k === 'closed') {
+          const busC = mk('C', {
+            ...extra, kind: 'BUS LANE', word: 'CLOSED', road, roadShort: rs, dist,
+            detail: st.allDay ? 'IN FORCE 24 HOURS' : `IN FORCE UNTIL ${fmt(st.until)}`,
+            puckDetail: st.allDay ? 'KEEP OUT - 24 HOURS' : `KEEP OUT TIL ${fmt(st.until)}`,
+            instr: `Stay out of the bus lane. ${who} only.`, lane: l,
+          });
+          if (!on) return busC;       // a bus lane starting just ahead
+          busAlong = busC;            // already beside it: hazards just ahead come first
+        }
+        if (st.k === 'closing') busWarn = mk('W', {
           ...extra, kind: 'BUS LANE', word: 'CLOSING', road, roadShort: rs, dist,
           detail: `IN FORCE FROM ${fmt(st.at)}`, puckDetail: `FROM ${fmt(st.at)}`,
           instr: `The bus lane comes into force in ${st.inMin} min. Leave it before ${fmt(st.at)}.`, lane: l,
         });
-        mem.busOpen = { l, st, road, rs, dist };  // open lanes are shown only if nothing else is going on
+        mem.busOpen = st.k === 'open' ? { l, st, road, rs, dist } : null;  // open lanes are shown only if nothing else is going on
       } else mem.busOpen = null;
     } else mem.busOpen = null;
+
+    // --- bus gate / no motor vehicles / pedestrian zone / timed no entry ahead ---
+    let restrWarn = null;
+    mem.restrOpen = null;
+    if (rAhead) {
+      const r = rAhead.r, st = restrStatus(r, clock);
+      const road = (r.road || r.kind).toUpperCase(), rs = shortName(r.road || r.kind);
+      const check = r.verified ? '' : ' Not yet verified: check the signs.';
+      if (st.k === 'closed' || st.k === 'unknown') return mk('E', {
+        ...extra, kind: r.kind, word: 'NO ENTRY', road, roadShort: rs, dist: rAhead.dist,
+        detail: st.k === 'unknown' ? 'TIMES UNKNOWN - CHECK THE SIGNS' : st.allDay ? (r.kind === 'BUS GATE' ? 'BUSES, CYCLES AND TAXIS ONLY' : 'NO CARS') : `UNTIL ${fmt(st.until)}`,
+        puckDetail: st.k === 'unknown' ? 'CHECK THE SIGNS' : st.allDay ? (r.verified ? 'AT ALL TIMES' : 'CHECK THE SIGNS') : `UNTIL ${fmt(st.until)}`,
+        instr: `Don't drive into ${r.road || 'this street'} (${r.kind.toLowerCase()}).${check}`, restr: r,
+      });
+      if (st.k === 'closing') restrWarn = mk('W', {
+        ...extra, kind: r.kind, word: 'CLOSING', road, roadShort: rs, dist: rAhead.dist,
+        detail: `NO ENTRY FROM ${fmt(st.at)}`, puckDetail: `NO ENTRY FROM ${fmt(st.at)}`,
+        instr: `${r.road || 'This street'} closes to cars at ${fmt(st.at)}.${check}`, restr: r,
+      });
+      else mem.restrOpen = { r, st, road, rs, dist: rAhead.dist };
+    }
+
+    if (noEntry && mem.noEntry >= 2) return mk('E', {
+      ...extra, kind: 'ONE WAY STREET', word: 'NO ENTRY', road: (noEntry.way.name || 'ONE-WAY STREET').toUpperCase(),
+      roadShort: shortName(noEntry.way.name || 'ONE-WAY STREET'), dist: noEntry.look,
+      detail: 'ONE-WAY AGAINST YOU', puckDetail: 'ONE WAY AGAINST YOU',
+      instr: `Don't go straight on into ${noEntry.way.name || 'the one-way street'}.`,
+    });
+
+    // --- yellow box junction ahead ---
+    if (ctx.boxes && moving) {
+      let box = null;
+      for (const bx of ctx.boxes) {
+        const a = aheadOf(p, pos.heading, bx.c);
+        if (a.d > 90 + acc || a.ang > 50) continue;
+        const d = boxDist(bx, p);
+        if (d > 70 + acc || (a.lateral > 20 + acc && d > 0)) continue;
+        if (!box || d < box.d) box = { bx, d };
+      }
+      if (box) return mk('Y', {
+        ...extra, kind: 'YELLOW BOX JUNCTION', word: 'KEEP CLEAR', road: box.bx.junction.replace(/\s*\(.*?\)\s*/g, ' ').trim(), roadShort: box.bx.short, dist: box.d || null,
+        detail: box.d ? 'ENTER ONLY IF YOUR EXIT IS CLEAR' : "DON'T STOP IN THE BOX",
+        puckDetail: box.d ? 'EXIT MUST BE CLEAR' : "DON'T STOP IN BOX",
+        instr: 'Yellow box: only enter when your exit is clear (you may wait in it to turn right).', box: box.bx,
+      });
+    }
+
+    if (busAlong) return busAlong;
+    const closing = near.find(r => r.now.k === 'closing');
+    if (closing) return mk('W', {
+      ...extra, f: closing.f, dist: closing.d, word: 'CLOSING',
+      detail: `CLOSES IN ${closing.now.inMin} MIN`,
+      instr: `Avoid ${closing.f.road} from ${fmt(closing.now.at)}.`,
+    });
+    if (busWarn) return busWarn;
+    if (restrWarn) return restrWarn;
 
     // --- parked: what are the parking rules here? ---
     if (ctx.parked && ctx.zones) {
@@ -461,6 +703,15 @@
         instr: 'The bus lane is not in force: you can drive in it.', lane: l,
       });
     }
+    if (mem.restrOpen) {
+      const { r, st, road, rs, dist } = mem.restrOpen;
+      return mk('O', {
+        ...extra, kind: r.kind, word: 'OPEN', road, roadShort: rs, dist,
+        detail: st.why ? `OPEN ALL DAY - ${st.why}` : st.next !== undefined ? `NO ENTRY FROM ${fmt(st.next)}` : 'OPEN REST OF DAY',
+        puckDetail: st.why || (st.next !== undefined ? `CLOSES ${fmt(st.next)}` : 'OPEN REST OF DAY'),
+        instr: `${r.road || 'This street'} is open to cars now.${r.verified ? '' : ' Not yet verified: check the signs.'}`, restr: r,
+      });
+    }
     const first = c[0];
     const passed = first && first.ahead === false && first.d <= warnR;
     return mk('K', {
@@ -492,7 +743,9 @@
       park: o.park || null,
       pbp: o.pbp || null,
       lane: o.lane || null,
-      key: st + (o.kind || '') + (f ? f.id : o.lane ? o.lane.id : o.road || ''),
+      restr: o.restr || null, cam: o.cam || null, box: o.box || null, camOver: !!o.camOver,
+      limit: null, mph: null, over: 0,
+      key: st + (o.kind || '') + (f ? f.id : o.lane ? o.lane.id : o.restr ? o.restr.id : o.cam ? o.cam.id : o.box ? o.box.id : o.road || ''),
     };
   }
 
@@ -518,18 +771,22 @@
 
   // ---- message for the puck ----
   function clean(s) { return String(s || '').toUpperCase().replace(/[|]/g, '/').replace(/[^\x20-\x5A]/g, ' ').replace(/\s+/g, ' ').trim(); }
+  // v2: 2|STATE|ROAD|DIST|DETAIL|ACC|KIND|WORD|LIMIT|OVER
   function puckMessage(a) {
     const st = a.st === 'N' ? 'G' : a.st;
-    const dist = a.dist != null && 'CWOXE'.includes(a.st) ? Math.round(a.dist) : '';
+    const dist = a.dist != null && 'CWOXESY'.includes(a.st) ? Math.round(a.dist) : '';
     const detail = a.st === 'N' ? 'START GPS ON PHONE' : a.puckDetail;
     const acc = a.acc != null ? Math.round(a.acc) : '';
-    return ['1', st, clean(a.st === 'N' ? '' : a.roadShort), dist, clean(detail), acc, clean(a.kind)].join('|');
+    const word = a.st === 'N' ? 'NO GPS' : a.word;
+    const over = a.st === 'S' && a.camOver ? Math.max(a.over || 0, 1) : (a.over || 0);
+    return ['2', st, clean(a.st === 'N' ? '' : a.roadShort), dist, clean(detail), acc, clean(a.kind), clean(word), a.limit || '', over].join('|');
   }
 
   const api = {
     LON0, LAT0, toM, toLL, loadFeatures, nearest, londonNow, inTerm, status, evaluate, makeTracker, puckMessage,
     fmt, fmtDist, bearing, angleDiff, parseTimings, loadZones, inZone, zoneStatus, parkingAt, whenText, loadRoads, matchRoad, shortName, DAYS,
     parseHours, loadBusLanes, busStatus, matchBusLane, loadPayByPhone, nearestPayByPhone,
+    parseConditional, loadRestrictions, nearestNamed, restrStatus, matchRestriction, loadCameras, loadYellowBoxes, boxDist, aheadOf,
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.RoadEngine = api;

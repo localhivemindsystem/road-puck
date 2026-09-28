@@ -61,6 +61,20 @@ def fmt_dist(m):
     return f"{m // 1000}.{(m % 1000) // 100} KM"
 
 
+def badge(d, limit, over):
+    cx, cy, r = 233, 58, 38
+    if over >= 2:
+        d.ellipse((cx - r, cy - r, cx + r, cy + r), fill=RED); num = WHITE
+    elif over == 1:
+        d.ellipse((cx - r, cy - r, cx + r, cy + r), fill=AMBER); num = (0, 0, 0)
+    else:
+        d.ellipse((cx - r, cy - r, cx + r, cy + r), fill=RED)
+        d.ellipse((cx - r + 8, cy - r + 8, cx + r - 8, cy + r - 8), fill=WHITE); num = (0, 0, 0)
+    f = F["ROAD"]
+    t = str(limit)
+    d.text((cx - f.getlength(t) / 2, cy + cap(f) // 2), t, font=f, fill=num, anchor="ls")
+
+
 def screen(msg):
     img = Image.new("RGB", (466, 466), (0, 0, 0))
     d = ImageDraw.Draw(img)
@@ -72,8 +86,11 @@ def screen(msg):
         fit(d, "TAP CONNECT PUCK", 350, AMBER, "ROAD_S", "SMALL")
         fit(d, "RoadPuck-A1B2", 410, GREY, "TINY")
         return img
-    _, st, road, dist, detail, acc, kind = msg.split("|")
+    f = msg.split("|") + [""] * 10
+    _, st, road, dist, detail, acc, kind, word, limit, over = f[:10]
     dist = int(dist) if dist else -1
+    limit = int(limit) if limit else 0
+    over = int(over) if over else 0
     if st in ("X", "R"):
         d.ellipse((0, 0, 465, 465), fill=RED)
         fit(d, kind or "RESTRICTED", 90, WHITE, "SMALL")
@@ -82,15 +99,19 @@ def screen(msg):
         fit(d, road, 378, WHITE, "ROAD", "ROAD_S", "SMALL")
         fit(d, detail, 420, WHITE, "SMALL", "TINY")
         return img
-    col, word = {"C": (RED, "CLOSED"), "E": (RED, "NO ENTRY"), "W": (AMBER, "CLOSING"), "P": (AMBER, "PERMIT"),
-                 "O": (GREEN, "OPEN"), "F": (GREEN, "FREE"), "G": (AMBER, "NO GPS")}.get(st, (GREEN, "CLEAR"))
-    strong = st in ("C", "E")
+    col, w0 = {"C": (RED, "CLOSED"), "E": (RED, "NO ENTRY"), "W": (AMBER, "CLOSING"), "P": (AMBER, "PERMIT"),
+               "S": (RED if over else AMBER, "CAMERA"), "Y": (AMBER, "KEEP CLEAR"),
+               "O": (GREEN, "OPEN"), "F": (GREEN, "FREE"), "G": (AMBER, "NO GPS")}.get(st, (GREEN, "CLEAR"))
+    word = word or w0
+    strong = st in ("C", "E") or (st == "S" and over)
     ring(d, col, 14 if strong else 8)
-    if acc:
-        fit(d, f"GPS {acc} M", 54, GREY, "TINY")
-    fit(d, kind or "ROAD PUCK", 100, col, "SMALL")
-    fit(d, word, 228, col, "STATUS", "BIG")
-    fit(d, road, 290, WHITE, "ROAD", "ROAD_S", "SMALL")
+    if limit:
+        badge(d, limit, over)
+    elif acc:
+        fit(d, f"GPS {acc} M", 60, GREY, "TINY")
+    fit(d, kind or "ROAD PUCK", 122, col, "SMALL", "TINY")
+    fit(d, word, 238, col, "STATUS", "BIG")
+    fit(d, road, 292, WHITE, "ROAD", "ROAD_S", "SMALL")
     if dist >= 0:
         fit(d, fmt_dist(dist), 378, WHITE, "BIG")
         fit(d, detail, 424, WHITE if strong else GREY, "SMALL", "TINY")
@@ -99,20 +120,15 @@ def screen(msg):
     return img
 
 
-SCREENS = [
-    "CONNECT",
-    "1|K|NO CLOSURES AHEAD||NEAREST 1.2 KM|6|SCHOOL STREETS",
-    "1|W|STUDLEY RD|420|CLOSES IN 6 MIN|7|SCHOOL STREET",
-    "1|C|HACKFORD RD|180|UNTIL 09:15|8|SCHOOL STREET",
-    "1|X|HACKFORD RD|30|CLOSED UNTIL 09:15|8|SCHOOL STREET",
-    "1|O|SOUTH LAMBETH RD|250|NEXT CLOSURE 14:45|9|SCHOOL STREET",
-    "1|E|HEPWORTH RD|25|ONE WAY AGAINST YOU|6|ONE WAY STREET",
-    "1|R|HEPWORTH RD|0|TURN AROUND SAFELY|6|ONE WAY STREET",
-    "1|P|ZONE S STOCKWELL||OR PAY TIL 17:30|5|PARKING",
-    "1|F|ZONE S STOCKWELL||UNTIL TUE 08:30|5|PARKING",
-    "1|C|CAMBERWELL NEW RD||KEEP OUT - 24 HOURS|7|BUS LANE",
-    "1|O|KING'S MEWS||USE IT TIL 16:00|6|BUS LANE",
-]
+def demo_screens():
+    """The same sample screens as the firmware's demo mode."""
+    src = (ROOT / "firmware" / "RoadPuck" / "RoadPuck.ino").read_text()
+    block = src[src.index("const char *DEMO[] = {"):src.index("};", src.index("const char *DEMO[] = {"))]
+    import re
+    return ["CONNECT"] + [m.replace("\\'", "'") for m in re.findall(r'"(2\|[^"]*)"', block)]
+
+
+SCREENS = demo_screens()
 
 if __name__ == "__main__":
     tiles = [screen(s) for s in SCREENS]

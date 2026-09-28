@@ -167,5 +167,79 @@ const spot = pbp.find(x => x.on_street && E.parkingAt(zones, x.m, { day: 1, min:
   console.log(`${ok ? 'PASS' : 'FAIL'}  Parked next to ${spot.street}: ${a.word} | ${a.road}\n      ${a.instr}`);
 }
 
+
+// ---------- speed limits ----------
+console.log('\nSpeed limits');
+const check = (label, ok, info) => { if (!ok) fails++; console.log(`${ok ? 'PASS' : 'FAIL'}  ${label}${info ? `\n      ${info}` : ''}`); };
+{
+  const limits = {}; roads.ways.forEach(w => { limits[w.limit] = (limits[w.limit] || 0) + 1; });
+  console.log(`      street segments by limit (mph): ${JSON.stringify(limits)}`);
+  const w30 = roads.ways.find(w => w.limit === 30 && w.name && w.pts.length >= 2 && Math.hypot(w.pts[1][0] - w.pts[0][0], w.pts[1][1] - w.pts[0][1]) > 80);
+  const a = w30.pts[0], b = w30.pts[1], mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], hd = E.bearing(a, b);
+  const run = mps => { const r = E.evaluate([], { x: mid[0], y: mid[1], acc: 5, speed: mps, heading: hd }, MON('12:00'), { roads, mem: {} }); return r; };
+  const r1 = run(12), r2 = run(15), r3 = run(16.2);
+  check(`${w30.name} is 30 mph; at ${r1.mph} mph not over`, r1.limit === 30 && r1.over === 0, E.puckMessage(r1));
+  check(`at ${r2.mph} mph: over (amber)`, r2.over === 1);
+  check(`at ${r3.mph} mph: well over (red)`, r3.over === 2);
+}
+
+// ---------- restrictions ----------
+console.log('\nNo entry, bus gates and timed restrictions');
+const restrGj = JSON.parse(fs.readFileSync(path.join(__dirname, '../docs/data/restrictions.geojson'), 'utf8'));
+const restr = E.loadRestrictions(restrGj, feats, roads);
+const kinds = {}; restr.forEach(r => { kinds[r.kind] = (kinds[r.kind] || 0) + 1; });
+console.log(`      ${restr.length} restrictions after removing ${restrGj.features.length - restr.length} that duplicate council School Streets: ${JSON.stringify(kinds)}`);
+check('every timed restriction has readable times', restr.filter(r => r.when).every(r => r.cond.ok), restr.filter(r => r.when && !r.cond.ok).map(r => r.when).join(' | '));
+const approach = (r, look = 40) => {  // a point before the start of the longest segment, heading along it
+  let best = 0, bi = 0;
+  for (let i = 0; i < r.pts.length - 1; i++) { const L = Math.hypot(r.pts[i + 1][0] - r.pts[i][0], r.pts[i + 1][1] - r.pts[i][1]); if (L > best) { best = L; bi = i; } }
+  const a = r.pts[bi], b = r.pts[bi + 1], hd = E.bearing(a, b), h = hd * Math.PI / 180;
+  return { pos: { x: a[0] - Math.sin(h) * look, y: a[1] - Math.cos(h) * look, acc: 5, speed: 8, heading: hd }, len: best, on: { x: (a[0] + b[0]) / 2, y: (a[1] + b[1]) / 2, acc: 5, speed: 8, heading: hd } };
+};
+{
+  const gate = restr.filter(r => r.kind === 'BUS GATE' && r.road && !/^Near /.test(r.road)).map(r => ({ r, ...approach(r) })).sort((a, b) => b.len - a.len)[0];
+  const a = E.evaluate([], gate.pos, MON('12:00'), { restr, mem: {} });
+  check(`Approaching the bus gate on ${gate.r.road}`, a.st === 'E' && a.kind === 'BUS GATE', `${a.st} ${a.word} | ${a.road} | ${a.detail}\n      puck: ${E.puckMessage(a)}`);
+  const mem = {}; let b;
+  for (let k = 0; k < 2; k++) b = E.evaluate([], gate.on, MON('12:00'), { restr, mem, fixId: k });
+  check(`Driving along the bus gate itself`, b.st === 'X', `${b.st} ${b.word} | ${b.kind} | ${b.detail}`);
+}
+{
+  const sat = restr.find(r => /Sa 08:00-17:00/.test(r.when));
+  if (sat) {
+    const ap = approach(sat);
+    const a1 = E.evaluate([], ap.pos, { day: 6, min: 600, term: true }, { restr, mem: {} });
+    const a2 = E.evaluate([], ap.pos, { day: 1, min: 600, term: true }, { restr, mem: {} });
+    check(`Timed no entry (${sat.road || 'unnamed'}, Sat 08:00-17:00): Saturday 10:00`, a1.st === 'E' && a1.detail.includes('17:00'), `${a1.st} ${a1.word} | ${a1.detail}`);
+    check(`Same street on Monday: open`, a2.st === 'O', `${a2.st} ${a2.word} | ${a2.detail}`);
+  }
+}
+
+// ---------- cameras ----------
+console.log('\nCameras');
+const cams = E.loadCameras(JSON.parse(fs.readFileSync(path.join(__dirname, '../docs/data/cameras.geojson'), 'utf8')));
+{
+  const q = cams[0];
+  const hd = 45, h = hd * Math.PI / 180;
+  const before = { x: q.m[0] - Math.sin(h) * 180, y: q.m[1] - Math.cos(h) * 180, acc: 5, speed: 13, heading: hd };
+  const a = E.evaluate([], before, MON('12:00'), { cams, roads, mem: {} });
+  check(`Camera ${q.id} 180 m ahead`, a.st === 'S' && Math.round(a.dist) === 180, `${a.st} ${a.kind} ${a.word} | ${a.road} | ${a.detail}\n      puck: ${E.puckMessage(a)}`);
+  const after = { ...before, heading: (hd + 180) % 360 };
+  const b = E.evaluate([], after, MON('12:00'), { cams, roads, mem: {} });
+  check('Same place driving away from it: no camera alert', b.st !== 'S', `${b.st}`);
+}
+
+// ---------- yellow boxes ----------
+console.log('\nYellow boxes');
+const boxes = E.loadYellowBoxes(JSON.parse(fs.readFileSync(path.join(__dirname, '../docs/data/yellow_boxes.geojson'), 'utf8')));
+{
+  const bx = boxes.find(b => /BRIXTON/.test(b.junction)) || boxes[0];
+  const hd = 0, before = { x: bx.c[0], y: bx.c[1] - 45, acc: 5, speed: 6, heading: hd };
+  const a = E.evaluate([], before, MON('12:00'), { boxes, mem: {} });
+  check(`45 m before ${bx.junction}`, a.st === 'Y', `${a.st} ${a.word} | ${a.road} | ${a.detail}\n      puck: ${E.puckMessage(a)}`);
+  const inside = E.evaluate([], { x: bx.c[0], y: bx.c[1], acc: 5, speed: 3, heading: hd }, MON('12:00'), { boxes, mem: {} });
+  check('Inside the box', inside.st === 'Y' && inside.detail.includes("DON'T STOP"), inside.detail);
+}
+
 console.log(fails ? `\n${fails} FAILED` : '\nAll checks passed');
 process.exit(fails ? 1 : 0);

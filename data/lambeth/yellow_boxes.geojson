@@ -1,0 +1,3750 @@
+{
+ "type": "FeatureCollection",
+ "name": "Yellow box junctions (TfL)",
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.113687,
+       51.465956
+      ],
+      [
+       -0.113622,
+       51.466097
+      ],
+      [
+       -0.113573,
+       51.466043
+      ],
+      [
+       -0.113619,
+       51.465942
+      ],
+      [
+       -0.113687,
+       51.465956
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3842",
+    "junction": "BRIXTON RD / STOCKWELL PARK WALK (WEST BOX)",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.123133,
+       51.484568
+      ],
+      [
+       -0.12309,
+       51.484626
+      ],
+      [
+       -0.122994,
+       51.484492
+      ],
+      [
+       -0.12304,
+       51.484435
+      ],
+      [
+       -0.123133,
+       51.484568
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3750",
+    "junction": "STH LAMBETH RD / PARRY ST (NORTH BOX)",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.112333,
+       51.482127
+      ],
+      [
+       -0.11229,
+       51.482068
+      ],
+      [
+       -0.112424,
+       51.481916
+      ],
+      [
+       -0.112492,
+       51.481942
+      ],
+      [
+       -0.112333,
+       51.482127
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3527",
+    "junction": "KENNINGTON PARK RD / HARLEYFORD ST / CAMBERWELL NEW RD (WEST BOX)",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.123318,
+       51.484419
+      ],
+      [
+       -0.12322,
+       51.484313
+      ],
+      [
+       -0.123453,
+       51.484299
+      ],
+      [
+       -0.123465,
+       51.484301
+      ],
+      [
+       -0.12348,
+       51.484302
+      ],
+      [
+       -0.123477,
+       51.484416
+      ],
+      [
+       -0.123318,
+       51.484419
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3564",
+    "junction": "STH LAMBETH RD / PARRY ST (SOUTH BOX)",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.086851,
+       51.473518
+      ],
+      [
+       -0.086676,
+       51.473527
+      ],
+      [
+       -0.086603,
+       51.47346
+      ],
+      [
+       -0.086779,
+       51.473457
+      ],
+      [
+       -0.086851,
+       51.473518
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3767",
+    "junction": "PECKHAM RD / CAMBERWELL CHURCH ST / BENHILL RD / WILSON RD",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.094479,
+       51.474529
+      ],
+      [
+       -0.094434,
+       51.474582
+      ],
+      [
+       -0.094311,
+       51.474529
+      ],
+      [
+       -0.094364,
+       51.474484
+      ],
+      [
+       -0.094479,
+       51.474529
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3470",
+    "junction": "CAMBERWELL NEW RD / WARNER RD / CAMBERWELL PSG",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.111557,
+       51.482673
+      ],
+      [
+       -0.111641,
+       51.48257
+      ],
+      [
+       -0.111721,
+       51.482643
+      ],
+      [
+       -0.111613,
+       51.482756
+      ],
+      [
+       -0.111557,
+       51.482673
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3355",
+    "junction": "KENNINGTON PARK ROAD",
+    "from": "from southern most point of traffic island at Junction of Kennington Park Road and the Northbound Brixton Road",
+    "to": "South side of Brixton Road north bound where it meets Kennington park Raad",
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.116031,
+       51.500703
+      ],
+      [
+       -0.115878,
+       51.50083
+      ],
+      [
+       -0.115767,
+       51.500835
+      ],
+      [
+       -0.115871,
+       51.500655
+      ],
+      [
+       -0.116031,
+       51.500703
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3521",
+    "junction": "WESTMINSTER BRIDGE RD / ADDINGTON ST",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.111166,
+       51.481516
+      ],
+      [
+       -0.111218,
+       51.481594
+      ],
+      [
+       -0.110656,
+       51.481348
+      ],
+      [
+       -0.110664,
+       51.481299
+      ],
+      [
+       -0.111166,
+       51.481516
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3802",
+    "junction": "BRIXTON RD / CAMBERWELL NEW RD (NORTH BOX)",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.11344,
+       51.466023
+      ],
+      [
+       -0.113516,
+       51.465857
+      ],
+      [
+       -0.113514,
+       51.465861
+      ],
+      [
+       -0.113594,
+       51.465878
+      ],
+      [
+       -0.113516,
+       51.466039
+      ],
+      [
+       -0.11344,
+       51.466023
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3696",
+    "junction": "BRIXTON RD / STOCKWELL PARK WALK (EAST BOX)",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.130743,
+       51.424666
+      ],
+      [
+       -0.130567,
+       51.424676
+      ],
+      [
+       -0.130498,
+       51.424549
+      ],
+      [
+       -0.130672,
+       51.424513
+      ],
+      [
+       -0.130742,
+       51.424665
+      ],
+      [
+       -0.130743,
+       51.424666
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3541",
+    "junction": "STREATHAM HIGH ROAD",
+    "from": "southern kerb of service road access to store car parking",
+    "to": "northern kerb of service road access to store car parking",
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.1015,
+       51.47744
+      ],
+      [
+       -0.101604,
+       51.477482
+      ],
+      [
+       -0.1015,
+       51.477558
+      ],
+      [
+       -0.10134,
+       51.477502
+      ],
+      [
+       -0.1015,
+       51.47744
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3690",
+    "junction": "WYNDHAM RD / CAMBERWELL NEW RD / LOTHIAN RD",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.146091,
+       51.497206
+      ],
+      [
+       -0.146161,
+       51.497108
+      ],
+      [
+       -0.146295,
+       51.497077
+      ],
+      [
+       -0.146414,
+       51.497251
+      ],
+      [
+       -0.146287,
+       51.497283
+      ],
+      [
+       -0.146091,
+       51.497206
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3799",
+    "junction": "GROSVENOR GDNS / EBURY ST / BEESTON PL",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.108477,
+       51.480331
+      ],
+      [
+       -0.108401,
+       51.48041
+      ],
+      [
+       -0.108319,
+       51.480382
+      ],
+      [
+       -0.108403,
+       51.480299
+      ],
+      [
+       -0.108476,
+       51.48033
+      ],
+      [
+       -0.108477,
+       51.480331
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3421",
+    "junction": "CAMBERWELL NEW RD / BOLTON CRES / FOXLEY RD",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.10354,
+       51.478285
+      ],
+      [
+       -0.103699,
+       51.478353
+      ],
+      [
+       -0.103597,
+       51.478414
+      ],
+      [
+       -0.103456,
+       51.478357
+      ],
+      [
+       -0.10354,
+       51.478285
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3567",
+    "junction": "WARHAM ST / VASSALL RD / CAMBERWELL NEW RD",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.124231,
+       51.486328
+      ],
+      [
+       -0.124215,
+       51.486345
+      ],
+      [
+       -0.124209,
+       51.486367
+      ],
+      [
+       -0.124196,
+       51.486387
+      ],
+      [
+       -0.124182,
+       51.486403
+      ],
+      [
+       -0.124169,
+       51.486417
+      ],
+      [
+       -0.124156,
+       51.486429
+      ],
+      [
+       -0.123962,
+       51.48636
+      ],
+      [
+       -0.123998,
+       51.486344
+      ],
+      [
+       -0.124029,
+       51.486321
+      ],
+      [
+       -0.124053,
+       51.486292
+      ],
+      [
+       -0.124231,
+       51.486328
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3664",
+    "junction": "WANDSWORTH RD / BRIDGEFOOT / ALBERT EMBANKMENT",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.116972,
+       51.499789
+      ],
+      [
+       -0.116965,
+       51.499875
+      ],
+      [
+       -0.116836,
+       51.499864
+      ],
+      [
+       -0.116852,
+       51.499779
+      ],
+      [
+       -0.116972,
+       51.499789
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3687",
+    "junction": "LAMBETH PALACE ROAD / ST THOMAS HOSPITAL EMERGENCY EXIT",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.130834,
+       51.489404
+      ],
+      [
+       -0.130691,
+       51.489336
+      ],
+      [
+       -0.13078,
+       51.489249
+      ],
+      [
+       -0.130931,
+       51.489326
+      ],
+      [
+       -0.130834,
+       51.489404
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3401",
+    "junction": "VAUXHALL BRIDGE ROAD",
+    "from": "j/w John Islip St",
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.146984,
+       51.498051
+      ],
+      [
+       -0.147083,
+       51.498153
+      ],
+      [
+       -0.146981,
+       51.498175
+      ],
+      [
+       -0.146895,
+       51.498067
+      ],
+      [
+       -0.146977,
+       51.498047
+      ],
+      [
+       -0.14698,
+       51.49805
+      ],
+      [
+       -0.146984,
+       51.498051
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3756",
+    "junction": "GROSVENOR PL / HOBART PL / LOWER GROSVENOR PL / GROSVENOR GDNS",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.124585,
+       51.445332
+      ],
+      [
+       -0.124402,
+       51.445282
+      ],
+      [
+       -0.124469,
+       51.44502
+      ],
+      [
+       -0.124644,
+       51.445136
+      ],
+      [
+       -0.124585,
+       51.445332
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3836",
+    "junction": "BRIXTON HILL / CHRISTCHURCH RD / STREATHAM PLACE / STREATHAM HILL (WEST BOX)",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.106312,
+       51.441031
+      ],
+      [
+       -0.10614,
+       51.441049
+      ],
+      [
+       -0.106175,
+       51.440975
+      ],
+      [
+       -0.106312,
+       51.440977
+      ],
+      [
+       -0.106312,
+       51.441031
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3693",
+    "junction": "THURLOW PARK RD / NORWOOD RD / TULSE HILL (NORTH BOX)",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.147832,
+       51.451217
+      ],
+      [
+       -0.147686,
+       51.451173
+      ],
+      [
+       -0.147678,
+       51.451062
+      ],
+      [
+       -0.147827,
+       51.451132
+      ],
+      [
+       -0.147833,
+       51.451217
+      ],
+      [
+       -0.147832,
+       51.451217
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3730",
+    "junction": "BALHAM HILL",
+    "from": "Balham Hill northern junction with Cathles Road and Malwood Road",
+    "to": "Balham Hill southern junction with Cathles Road and Malwood Road",
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.116923,
+       51.498999
+      ],
+      [
+       -0.116966,
+       51.499005
+      ],
+      [
+       -0.116936,
+       51.49911
+      ],
+      [
+       -0.116892,
+       51.499104
+      ],
+      [
+       -0.116923,
+       51.498999
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3550",
+    "junction": "LAMBETH PALACE ROAD / ST THOMAS HOSPITAL EMERGENCY EXIT",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.082109,
+       51.496654
+      ],
+      [
+       -0.081858,
+       51.49675
+      ],
+      [
+       -0.081575,
+       51.49675
+      ],
+      [
+       -0.081764,
+       51.496653
+      ],
+      [
+       -0.08211,
+       51.496653
+      ],
+      [
+       -0.082109,
+       51.496654
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3485",
+    "junction": "TOWER BRIDGE ROAD",
+    "from": "Tower Bridge Road / Bermondsey Street / Grange Road",
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.129261,
+       51.432034
+      ],
+      [
+       -0.129177,
+       51.432145
+      ],
+      [
+       -0.129089,
+       51.432129
+      ],
+      [
+       -0.129163,
+       51.432029
+      ],
+      [
+       -0.129261,
+       51.432034
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3679",
+    "junction": "STREATHAM HIGH RD / PENDENNIS RD / BECMEAD AVE",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.125438,
+       51.48433
+      ],
+      [
+       -0.125244,
+       51.484449
+      ],
+      [
+       -0.125034,
+       51.484436
+      ],
+      [
+       -0.125184,
+       51.484314
+      ],
+      [
+       -0.125438,
+       51.48433
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3602",
+    "junction": "PARRY ST / 20M WEST OF BONDWAY",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.131642,
+       51.48959
+      ],
+      [
+       -0.13157,
+       51.489651
+      ],
+      [
+       -0.131425,
+       51.489579
+      ],
+      [
+       -0.131549,
+       51.489549
+      ],
+      [
+       -0.131642,
+       51.48959
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3608",
+    "junction": "VAUXHALL BRIDGE RD / DRUMMOND GATE / BESSBOROUGH GDNS",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.131145,
+       51.427415
+      ],
+      [
+       -0.131056,
+       51.427412
+      ],
+      [
+       -0.131058,
+       51.427369
+      ],
+      [
+       -0.131184,
+       51.427373
+      ],
+      [
+       -0.131185,
+       51.427415
+      ],
+      [
+       -0.131145,
+       51.427415
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3725",
+    "junction": "STREATHAM HIGH ROAD",
+    "from": "STANTHORPE ROAD",
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.123492,
+       51.44927
+      ],
+      [
+       -0.123413,
+       51.449363
+      ],
+      [
+       -0.123273,
+       51.44932
+      ],
+      [
+       -0.123363,
+       51.449229
+      ],
+      [
+       -0.123492,
+       51.44927
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3671",
+    "junction": "BRIXTON HILL / NEW PARK RD",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.129145,
+       51.421875
+      ],
+      [
+       -0.129048,
+       51.421885
+      ],
+      [
+       -0.128946,
+       51.421689
+      ],
+      [
+       -0.129057,
+       51.421666
+      ],
+      [
+       -0.129145,
+       51.421875
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3433",
+    "junction": "STREATHAM HIGH RD / GREYHOUND LANE",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.127665,
+       51.484811
+      ],
+      [
+       -0.127516,
+       51.48479
+      ],
+      [
+       -0.127516,
+       51.484692
+      ],
+      [
+       -0.127645,
+       51.484711
+      ],
+      [
+       -0.127665,
+       51.484811
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3596",
+    "junction": "NINE ELMS LN / ST GEORGES WHARF EXIT",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.143909,
+       51.498133
+      ],
+      [
+       -0.143912,
+       51.498134
+      ],
+      [
+       -0.143729,
+       51.498093
+      ],
+      [
+       -0.143801,
+       51.49801
+      ],
+      [
+       -0.143975,
+       51.498061
+      ],
+      [
+       -0.143909,
+       51.498133
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3837",
+    "junction": "BUCKINGHAM PALACE ROAD",
+    "from": "JW BRESSENDEN PLACE",
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.114175,
+       51.464694
+      ],
+      [
+       -0.114116,
+       51.464829
+      ],
+      [
+       -0.114019,
+       51.464846
+      ],
+      [
+       -0.114091,
+       51.464681
+      ],
+      [
+       -0.114175,
+       51.464694
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3482",
+    "junction": "STOCKWELL RD / BRIXTON RD / GRESHAM RD (EAST BOX)",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.114653,
+       51.463853
+      ],
+      [
+       -0.114585,
+       51.463848
+      ],
+      [
+       -0.114603,
+       51.463799
+      ],
+      [
+       -0.114672,
+       51.463809
+      ],
+      [
+       -0.114654,
+       51.46385
+      ],
+      [
+       -0.114653,
+       51.463853
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3576",
+    "junction": "FERNDALE ROAD",
+    "from": "FERNDALE ROAD",
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.129591,
+       51.430484
+      ],
+      [
+       -0.129595,
+       51.430474
+      ],
+      [
+       -0.12959,
+       51.430465
+      ],
+      [
+       -0.129632,
+       51.430432
+      ],
+      [
+       -0.12964,
+       51.430432
+      ],
+      [
+       -0.129654,
+       51.430427
+      ],
+      [
+       -0.129666,
+       51.43042
+      ],
+      [
+       -0.129715,
+       51.430437
+      ],
+      [
+       -0.129651,
+       51.430503
+      ],
+      [
+       -0.129591,
+       51.430484
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3419",
+    "junction": "STREATHAM HIGH RD / SHRUBBERY  RD",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.089349,
+       51.441083
+      ],
+      [
+       -0.089333,
+       51.441112
+      ],
+      [
+       -0.089197,
+       51.441097
+      ],
+      [
+       -0.089209,
+       51.441064
+      ],
+      [
+       -0.089349,
+       51.441083
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3548",
+    "junction": "THURLOW PARK RD / GALLERY RD",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.114814,
+       51.463324
+      ],
+      [
+       -0.114732,
+       51.46331
+      ],
+      [
+       -0.11476,
+       51.463245
+      ],
+      [
+       -0.114764,
+       51.463246
+      ],
+      [
+       -0.114767,
+       51.463245
+      ],
+      [
+       -0.114773,
+       51.46324
+      ],
+      [
+       -0.114776,
+       51.463235
+      ],
+      [
+       -0.114845,
+       51.463244
+      ],
+      [
+       -0.114814,
+       51.463324
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3848",
+    "junction": "BRIXTON RD / ATLANTIC RD",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.148136,
+       51.476366
+      ],
+      [
+       -0.14836,
+       51.476438
+      ],
+      [
+       -0.148129,
+       51.476493
+      ],
+      [
+       -0.148047,
+       51.476418
+      ],
+      [
+       -0.148076,
+       51.476407
+      ],
+      [
+       -0.148112,
+       51.476393
+      ],
+      [
+       -0.148136,
+       51.476366
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3350",
+    "junction": "BATTERSEA PARK RD / QUEENSTOWN RD (NORTH BOX)",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.126538,
+       51.484419
+      ],
+      [
+       -0.126483,
+       51.484481
+      ],
+      [
+       -0.126254,
+       51.484458
+      ],
+      [
+       -0.126334,
+       51.484396
+      ],
+      [
+       -0.126538,
+       51.484419
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3387",
+    "junction": "WANDSWORTH RD / PARRY ST / NINE ELMS LANE (SOUTH BOX)",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.127142,
+       51.483638
+      ],
+      [
+       -0.127022,
+       51.483719
+      ],
+      [
+       -0.127043,
+       51.48363
+      ],
+      [
+       -0.12705,
+       51.483607
+      ],
+      [
+       -0.127094,
+       51.48361
+      ],
+      [
+       -0.127142,
+       51.483638
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3648",
+    "junction": "WANDSWORTH RD / NEW COVENT GARDEN MARKET EXIT",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.07391,
+       51.486947
+      ],
+      [
+       -0.073912,
+       51.486946
+      ],
+      [
+       -0.073908,
+       51.48695
+      ],
+      [
+       -0.073682,
+       51.486861
+      ],
+      [
+       -0.07373,
+       51.486808
+      ],
+      [
+       -0.073955,
+       51.486902
+      ],
+      [
+       -0.07391,
+       51.486947
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3785",
+    "junction": "OLD KENT ROAD",
+    "from": "Outside Fire Station",
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.088491,
+       51.440878
+      ],
+      [
+       -0.088373,
+       51.440875
+      ],
+      [
+       -0.088367,
+       51.440843
+      ],
+      [
+       -0.088492,
+       51.440844
+      ],
+      [
+       -0.088491,
+       51.440878
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3393",
+    "junction": "THURLOW PARK RD / ALLEYN PARK / DULWICH COMMON",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.083063,
+       51.473803
+      ],
+      [
+       -0.082921,
+       51.473806
+      ],
+      [
+       -0.082919,
+       51.473766
+      ],
+      [
+       -0.083063,
+       51.473764
+      ],
+      [
+       -0.083063,
+       51.473803
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3583",
+    "junction": "PECKHAM RD / HAVIL ST",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.116269,
+       51.465739
+      ],
+      [
+       -0.116192,
+       51.4657
+      ],
+      [
+       -0.116187,
+       51.465655
+      ],
+      [
+       -0.116259,
+       51.465691
+      ],
+      [
+       -0.116269,
+       51.465739
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3769",
+    "junction": "STOCKWELL RD/ STOCKWELL PARK WALK (SOUTH BOX)",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "MultiPolygon",
+    "coordinates": [
+     [
+      [
+       [
+        -0.159598,
+        51.43562
+       ],
+       [
+        -0.159597,
+        51.435619
+       ],
+       [
+        -0.159598,
+        51.435616
+       ],
+       [
+        -0.159598,
+        51.43562
+       ]
+      ]
+     ],
+     [
+      [
+       [
+        -0.159597,
+        51.435619
+       ],
+       [
+        -0.159596,
+        51.435663
+       ],
+       [
+        -0.159428,
+        51.435709
+       ],
+       [
+        -0.159385,
+        51.435672
+       ],
+       [
+        -0.159596,
+        51.435616
+       ],
+       [
+        -0.159597,
+        51.435619
+       ]
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3823",
+    "junction": "BALHAM HIGH ROAD",
+    "from": "Tooting Bec Road",
+    "to": "Trinity Road",
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.129499,
+       51.422947
+      ],
+      [
+       -0.129632,
+       51.423118
+      ],
+      [
+       -0.129456,
+       51.423145
+      ],
+      [
+       -0.129383,
+       51.422972
+      ],
+      [
+       -0.129499,
+       51.422947
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3800",
+    "junction": "STREATHAM HIGH RD / STREATHAM COMMON NORTH SIDE",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.147471,
+       51.45299
+      ],
+      [
+       -0.147383,
+       51.453012
+      ],
+      [
+       -0.14746,
+       51.45287
+      ],
+      [
+       -0.147534,
+       51.452881
+      ],
+      [
+       -0.147471,
+       51.45299
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3623",
+    "junction": "BALHAM HILL / NIGHTINGALE LANE / CLAPHAM COMMON (WEST BOX)",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.111361,
+       51.486951
+      ],
+      [
+       -0.111359,
+       51.486951
+      ],
+      [
+       -0.111348,
+       51.487062
+      ],
+      [
+       -0.111258,
+       51.487029
+      ],
+      [
+       -0.111268,
+       51.486914
+      ],
+      [
+       -0.111361,
+       51.486951
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3514",
+    "junction": "KENNINGTON ROAD",
+    "from": "north kerb kennington road",
+    "to": "south kerb kennington road",
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.103114,
+       51.491228
+      ],
+      [
+       -0.103114,
+       51.491229
+      ],
+      [
+       -0.103242,
+       51.491224
+      ],
+      [
+       -0.103185,
+       51.491309
+      ],
+      [
+       -0.103085,
+       51.491311
+      ],
+      [
+       -0.103114,
+       51.491228
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3468",
+    "junction": "KENNINGTON PARK ROAD",
+    "from": "At Junction of Kennington Park Road, Kennington Lane",
+    "to": "and Newington Butts",
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.106315,
+       51.440878
+      ],
+      [
+       -0.10631,
+       51.440921
+      ],
+      [
+       -0.106167,
+       51.440916
+      ],
+      [
+       -0.10608,
+       51.440875
+      ],
+      [
+       -0.106097,
+       51.440854
+      ],
+      [
+       -0.1061,
+       51.440841
+      ],
+      [
+       -0.106315,
+       51.440878
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3806",
+    "junction": "THURLOW PARK RD / NORWOOD RD / TULSE HILL (SOUTH BOX)",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.073989,
+       51.486831
+      ],
+      [
+       -0.07402,
+       51.486903
+      ],
+      [
+       -0.07379,
+       51.486804
+      ],
+      [
+       -0.073826,
+       51.486768
+      ],
+      [
+       -0.073989,
+       51.486831
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3600",
+    "junction": "OLD KENT RD / TRAFALGAR AVE",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.132802,
+       51.490138
+      ],
+      [
+       -0.132635,
+       51.490251
+      ],
+      [
+       -0.132516,
+       51.490189
+      ],
+      [
+       -0.132674,
+       51.490071
+      ],
+      [
+       -0.132802,
+       51.490138
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3743",
+    "junction": "VAUXHALL BRIDGE RD / RAMPAYNE ST",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.070269,
+       51.498718
+      ],
+      [
+       -0.070198,
+       51.498788
+      ],
+      [
+       -0.069994,
+       51.498712
+      ],
+      [
+       -0.070063,
+       51.498637
+      ],
+      [
+       -0.070269,
+       51.498718
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3388",
+    "junction": "JAMAICA ROAD",
+    "from": "Junction of Abbey Street and Jamaica Road",
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "MultiPolygon",
+    "coordinates": [
+     [
+      [
+       [
+        -0.128291,
+        51.419901
+       ],
+       [
+        -0.128288,
+        51.419901
+       ],
+       [
+        -0.128288,
+        51.419899
+       ],
+       [
+        -0.128291,
+        51.419901
+       ]
+      ]
+     ],
+     [
+      [
+       [
+        -0.128314,
+        51.420003
+       ],
+       [
+        -0.128222,
+        51.42001
+       ],
+       [
+        -0.1282,
+        51.419909
+       ],
+       [
+        -0.12829,
+        51.419902
+       ],
+       [
+        -0.128292,
+        51.41991
+       ],
+       [
+        -0.128314,
+        51.420003
+       ]
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3786",
+    "junction": "STREATHAM HIGH ROAD",
+    "from": ".",
+    "to": ".",
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.116885,
+       51.499623
+      ],
+      [
+       -0.117004,
+       51.499629
+      ],
+      [
+       -0.116985,
+       51.499716
+      ],
+      [
+       -0.116864,
+       51.499706
+      ],
+      [
+       -0.116885,
+       51.499623
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3534",
+    "junction": "LAMBETH PALACE RD / ST THOMAS HOSPITAL EMERGENCY EXIT",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.129466,
+       51.465398
+      ],
+      [
+       -0.1296,
+       51.465246
+      ],
+      [
+       -0.129704,
+       51.465281
+      ],
+      [
+       -0.129577,
+       51.465431
+      ],
+      [
+       -0.129466,
+       51.465398
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3626",
+    "junction": "CLAPHAM HIGH ST / CLAPHAM RD / BEDFORD RD / LANDOR RD",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.124544,
+       51.486396
+      ],
+      [
+       -0.124736,
+       51.486441
+      ],
+      [
+       -0.124893,
+       51.486529
+      ],
+      [
+       -0.124725,
+       51.486512
+      ],
+      [
+       -0.124544,
+       51.486396
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3697",
+    "junction": "BRIDGEFOOT ON VAUXHALL BRIDGE",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.121916,
+       51.485944
+      ],
+      [
+       -0.121926,
+       51.48593
+      ],
+      [
+       -0.122086,
+       51.485971
+      ],
+      [
+       -0.122048,
+       51.486044
+      ],
+      [
+       -0.122047,
+       51.486058
+      ],
+      [
+       -0.121868,
+       51.486106
+      ],
+      [
+       -0.121781,
+       51.486013
+      ],
+      [
+       -0.121832,
+       51.485997
+      ],
+      [
+       -0.121869,
+       51.485972
+      ],
+      [
+       -0.121916,
+       51.485944
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3680",
+    "junction": "STH LAMBETH RD / HARLEYFORD RD / KENNINGTON LANE",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.144991,
+       51.496683
+      ],
+      [
+       -0.144868,
+       51.496778
+      ],
+      [
+       -0.144737,
+       51.496765
+      ],
+      [
+       -0.14479,
+       51.496663
+      ],
+      [
+       -0.144991,
+       51.496683
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3580",
+    "junction": "VICTORIA ST / BUCKINGHAM PALACE RD / GROSVENOR GDNS",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.083367,
+       51.473706
+      ],
+      [
+       -0.083373,
+       51.473741
+      ],
+      [
+       -0.083178,
+       51.47375
+      ],
+      [
+       -0.083173,
+       51.473713
+      ],
+      [
+       -0.083367,
+       51.473706
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3611",
+    "junction": "PECKHAM RD / VESTRY RD",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.145214,
+       51.496166
+      ],
+      [
+       -0.145161,
+       51.496238
+      ],
+      [
+       -0.145159,
+       51.496238
+      ],
+      [
+       -0.145052,
+       51.496202
+      ],
+      [
+       -0.145141,
+       51.496086
+      ],
+      [
+       -0.145203,
+       51.496103
+      ],
+      [
+       -0.145166,
+       51.496154
+      ],
+      [
+       -0.145214,
+       51.496166
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3666",
+    "junction": "BUCKINGHAM PALACE ROAD",
+    "from": "BPR",
+    "to": "j/w terminus place",
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.111104,
+       51.481458
+      ],
+      [
+       -0.110685,
+       51.481273
+      ],
+      [
+       -0.110685,
+       51.481223
+      ],
+      [
+       -0.111048,
+       51.481388
+      ],
+      [
+       -0.111104,
+       51.481458
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3783",
+    "junction": "BRIXTON RD / CAMBERWELL NEW RD (SOUTH BOX)",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.105948,
+       51.488309
+      ],
+      [
+       -0.105855,
+       51.488277
+      ],
+      [
+       -0.105912,
+       51.488225
+      ],
+      [
+       -0.106001,
+       51.488259
+      ],
+      [
+       -0.105948,
+       51.488309
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3428",
+    "junction": "KENNINGTON PARK RD / BRAGANZA ST",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.143002,
+       51.496511
+      ],
+      [
+       -0.142984,
+       51.496642
+      ],
+      [
+       -0.142867,
+       51.496628
+      ],
+      [
+       -0.142861,
+       51.496524
+      ],
+      [
+       -0.143002,
+       51.496511
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3826",
+    "junction": "VICTORIA ST / ALLINGTON ST / WILTON RD",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.117454,
+       51.498372
+      ],
+      [
+       -0.117562,
+       51.498285
+      ],
+      [
+       -0.117652,
+       51.498328
+      ],
+      [
+       -0.117542,
+       51.498415
+      ],
+      [
+       -0.117454,
+       51.498372
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3634",
+    "junction": "LAMBETH PALACE ROAD / ST THOMAS HOSPITAL EMERGENCY EXIT",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.093198,
+       51.474161
+      ],
+      [
+       -0.092835,
+       51.474171
+      ],
+      [
+       -0.092831,
+       51.474116
+      ],
+      [
+       -0.093196,
+       51.474108
+      ],
+      [
+       -0.093198,
+       51.474161
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3448",
+    "junction": "CAMBERWELL NEW RD / CAMBERWELL RD / CAMBERWELL CHURCH ST / DENMARK HILL (NORTH BOX)",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.123138,
+       51.486303
+      ],
+      [
+       -0.123165,
+       51.486195
+      ],
+      [
+       -0.123215,
+       51.486199
+      ],
+      [
+       -0.123265,
+       51.486218
+      ],
+      [
+       -0.123307,
+       51.486241
+      ],
+      [
+       -0.123327,
+       51.486255
+      ],
+      [
+       -0.123224,
+       51.486333
+      ],
+      [
+       -0.123212,
+       51.486328
+      ],
+      [
+       -0.123178,
+       51.486314
+      ],
+      [
+       -0.123138,
+       51.486303
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3840",
+    "junction": "KENNINGTON LANE / ALBERT EMBANKMENT",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.151208,
+       51.44519
+      ],
+      [
+       -0.151325,
+       51.445049
+      ],
+      [
+       -0.151388,
+       51.445076
+      ],
+      [
+       -0.151264,
+       51.445215
+      ],
+      [
+       -0.151208,
+       51.44519
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3558",
+    "junction": "BALHAM HIGH ROAD",
+    "from": "BALHAM HIGH ROAD",
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.11248,
+       51.476761
+      ],
+      [
+       -0.112469,
+       51.476824
+      ],
+      [
+       -0.112406,
+       51.476819
+      ],
+      [
+       -0.112421,
+       51.476755
+      ],
+      [
+       -0.11248,
+       51.476761
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3798",
+    "junction": "BRIXTON RD / CALDWELL ST / VASSALL RD",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.111541,
+       51.48275
+      ],
+      [
+       -0.111543,
+       51.482753
+      ],
+      [
+       -0.111541,
+       51.482755
+      ],
+      [
+       -0.111538,
+       51.482753
+      ],
+      [
+       -0.111541,
+       51.48275
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3752",
+    "junction": "KENNINGTON PARK RD / BRIXTON RD",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.139182,
+       51.461048
+      ],
+      [
+       -0.139244,
+       51.461163
+      ],
+      [
+       -0.139158,
+       51.46118
+      ],
+      [
+       -0.139106,
+       51.461076
+      ],
+      [
+       -0.139182,
+       51.461048
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3506",
+    "junction": "CLAPHAM COMMON SOUTH SIDE / LONG RD / THE PAVEMENT",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.108334,
+       51.485961
+      ],
+      [
+       -0.108261,
+       51.485935
+      ],
+      [
+       -0.108386,
+       51.485804
+      ],
+      [
+       -0.108463,
+       51.485835
+      ],
+      [
+       -0.108334,
+       51.485961
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3775",
+    "junction": "KENNINGTON PARK ROAD",
+    "from": "Kennington Park Road  Jcn Kennington Park Place",
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.147306,
+       51.45397
+      ],
+      [
+       -0.147304,
+       51.453978
+      ],
+      [
+       -0.147292,
+       51.454037
+      ],
+      [
+       -0.147127,
+       51.454047
+      ],
+      [
+       -0.147125,
+       51.453976
+      ],
+      [
+       -0.147306,
+       51.45397
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3612",
+    "junction": "THE AVENUE / CLAPHAM COMMON SOUTH SIDE",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.114167,
+       51.464824
+      ],
+      [
+       -0.114204,
+       51.464766
+      ],
+      [
+       -0.114243,
+       51.464648
+      ],
+      [
+       -0.114321,
+       51.46466
+      ],
+      [
+       -0.114251,
+       51.464814
+      ],
+      [
+       -0.114167,
+       51.464824
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3815",
+    "junction": "STOCKWELL RD / BRIXTON RD / GRESHAM RD (WEST BOX)",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.145478,
+       51.477769
+      ],
+      [
+       -0.145242,
+       51.47794
+      ],
+      [
+       -0.145182,
+       51.47791
+      ],
+      [
+       -0.145421,
+       51.477736
+      ],
+      [
+       -0.145478,
+       51.477769
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3366",
+    "junction": "BATTERSEA PARK RD / PRINCE OF WALES DRIVE / HAVELOCK TERRACE",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.148418,
+       51.476394
+      ],
+      [
+       -0.148384,
+       51.476409
+      ],
+      [
+       -0.148153,
+       51.476342
+      ],
+      [
+       -0.148355,
+       51.476264
+      ],
+      [
+       -0.148418,
+       51.476394
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3420",
+    "junction": "BATTERSEA PARK RD / QUEENSTOWN RD (SOUTH BOX)",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.116113,
+       51.465893
+      ],
+      [
+       -0.116207,
+       51.465887
+      ],
+      [
+       -0.116158,
+       51.465942
+      ],
+      [
+       -0.116066,
+       51.46595
+      ],
+      [
+       -0.116113,
+       51.465893
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3712",
+    "junction": "STOCKWELL RD/ STOCKWELL PARK WALK (NORTH BOX)",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.071251,
+       51.473373
+      ],
+      [
+       -0.071238,
+       51.473404
+      ],
+      [
+       -0.071024,
+       51.473381
+      ],
+      [
+       -0.071032,
+       51.473356
+      ],
+      [
+       -0.071251,
+       51.473373
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3380",
+    "junction": "BELLENDEN ROAD",
+    "from": "PECKHAM HIGH STREET",
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.130873,
+       51.489302
+      ],
+      [
+       -0.130867,
+       51.4893
+      ],
+      [
+       -0.130873,
+       51.489296
+      ],
+      [
+       -0.130878,
+       51.489298
+      ],
+      [
+       -0.130873,
+       51.489302
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3784",
+    "junction": "JOHN ISLIP ST / BESSBOROUGH GDNS",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.14733,
+       51.452989
+      ],
+      [
+       -0.147255,
+       51.452976
+      ],
+      [
+       -0.147296,
+       51.452902
+      ],
+      [
+       -0.147372,
+       51.452916
+      ],
+      [
+       -0.14733,
+       51.452989
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3778",
+    "junction": "BALHAM HILL / NIGHTINGALE LANE / CLAPHAM COMMON (EAST BOX)",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.142086,
+       51.479597
+      ],
+      [
+       -0.142089,
+       51.479597
+      ],
+      [
+       -0.141841,
+       51.479658
+      ],
+      [
+       -0.141801,
+       51.479615
+      ],
+      [
+       -0.142047,
+       51.479562
+      ],
+      [
+       -0.142086,
+       51.479597
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3586",
+    "junction": "BATTERSEA PARK ROAD",
+    "from": "BATTERSEA PARK ROAD",
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.079891,
+       51.497687
+      ],
+      [
+       -0.079835,
+       51.497737
+      ],
+      [
+       -0.079675,
+       51.497712
+      ],
+      [
+       -0.079733,
+       51.497661
+      ],
+      [
+       -0.079891,
+       51.497687
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3400",
+    "junction": "TOWER BRIDGE RD / ABBEY ST",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.129488,
+       51.430705
+      ],
+      [
+       -0.129452,
+       51.430773
+      ],
+      [
+       -0.129396,
+       51.430762
+      ],
+      [
+       -0.129386,
+       51.43076
+      ],
+      [
+       -0.12941,
+       51.430703
+      ],
+      [
+       -0.12942,
+       51.430701
+      ],
+      [
+       -0.129429,
+       51.430697
+      ],
+      [
+       -0.129435,
+       51.430695
+      ],
+      [
+       -0.129488,
+       51.430705
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3841",
+    "junction": "STREATHAM HIGH RD / SUNNYHILL RD",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.128114,
+       51.420021
+      ],
+      [
+       -0.128065,
+       51.420026
+      ],
+      [
+       -0.128057,
+       51.41998
+      ],
+      [
+       -0.128097,
+       51.419972
+      ],
+      [
+       -0.128112,
+       51.42002
+      ],
+      [
+       -0.128114,
+       51.420021
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3818",
+    "junction": "STREATHAM COMMON SOUTH",
+    "from": "STREATHAM HIGH ROAD",
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "MultiPolygon",
+    "coordinates": [
+     [
+      [
+       [
+        -0.072415,
+        51.486365
+       ],
+       [
+        -0.072417,
+        51.486366
+       ],
+       [
+        -0.072415,
+        51.486366
+       ],
+       [
+        -0.072415,
+        51.486365
+       ]
+      ]
+     ],
+     [
+      [
+       [
+        -0.072469,
+        51.486253
+       ],
+       [
+        -0.072415,
+        51.486365
+       ],
+       [
+        -0.072342,
+        51.486338
+       ],
+       [
+        -0.072382,
+        51.486221
+       ],
+       [
+        -0.072469,
+        51.486253
+       ]
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3555",
+    "junction": "OLD KENT ROAD",
+    "from": "Mawbey Road Jcn Old Kent Road",
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.124372,
+       51.444995
+      ],
+      [
+       -0.124302,
+       51.445253
+      ],
+      [
+       -0.124219,
+       51.445231
+      ],
+      [
+       -0.124284,
+       51.444952
+      ],
+      [
+       -0.124372,
+       51.444995
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3655",
+    "junction": "BRIXTON HILL / CHRISTCHURCH RD / STREATHAM PLACE / STREATHAM HILL (EAST BOX)",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "MultiPolygon",
+    "coordinates": [
+     [
+      [
+       [
+        -0.111471,
+        51.487157
+       ],
+       [
+        -0.111473,
+        51.487158
+       ],
+       [
+        -0.111471,
+        51.487158
+       ],
+       [
+        -0.111471,
+        51.487157
+       ]
+      ]
+     ],
+     [
+      [
+       [
+        -0.111471,
+        51.487157
+       ],
+       [
+        -0.111383,
+        51.48711
+       ],
+       [
+        -0.111386,
+        51.486973
+       ],
+       [
+        -0.111473,
+        51.487012
+       ],
+       [
+        -0.111471,
+        51.487157
+       ]
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3678",
+    "junction": "KENNINGTON ROAD",
+    "from": "from southern kerb Windmill road",
+    "to": "Northern Kerb Windmill row",
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.117136,
+       51.498938
+      ],
+      [
+       -0.117088,
+       51.499069
+      ],
+      [
+       -0.11699,
+       51.499057
+      ],
+      [
+       -0.117039,
+       51.498923
+      ],
+      [
+       -0.117136,
+       51.498938
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3515",
+    "junction": "LAMBETH PALACE RD / ST THOMAS HOSPITAL EMERGENCY EXIT",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.116767,
+       51.459472
+      ],
+      [
+       -0.116626,
+       51.459439
+      ],
+      [
+       -0.11668,
+       51.459345
+      ],
+      [
+       -0.116833,
+       51.459381
+      ],
+      [
+       -0.116767,
+       51.459473
+      ],
+      [
+       -0.116767,
+       51.459472
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3615",
+    "junction": "BRIXTON HILL",
+    "from": "On South Bound A23, at junction with St Matthews Road",
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.115926,
+       51.461106
+      ],
+      [
+       -0.115826,
+       51.461268
+      ],
+      [
+       -0.115735,
+       51.461256
+      ],
+      [
+       -0.115824,
+       51.46109
+      ],
+      [
+       -0.115926,
+       51.461106
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3475",
+    "junction": "BRIXTON HILL / ACRE LANE / BRIXTON RD / COLD HARBOUR LANE",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.124042,
+       51.414672
+      ],
+      [
+       -0.124042,
+       51.414673
+      ],
+      [
+       -0.124018,
+       51.41467
+      ],
+      [
+       -0.124025,
+       51.414631
+      ],
+      [
+       -0.124051,
+       51.414635
+      ],
+      [
+       -0.124042,
+       51.414672
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3595",
+    "junction": "STREATHAM HIGH ROAD",
+    "from": "HERMITAGE LANE",
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -0.093208,
+       51.474006
+      ],
+      [
+       -0.093202,
+       51.474072
+      ],
+      [
+       -0.092822,
+       51.47408
+      ],
+      [
+       -0.092818,
+       51.474017
+      ],
+      [
+       -0.093208,
+       51.474006
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "id": "TFL-YBJ-3732",
+    "junction": "CAMBERWELL NEW RD / CAMBERWELL RD / CAMBERWELL CHURCH ST / DENMARK HILL (SOUTH BOX)",
+    "from": null,
+    "to": null,
+    "source": "https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/TfL_Yellow_box_junctions/FeatureServer/4"
+   }
+  }
+ ]
+}

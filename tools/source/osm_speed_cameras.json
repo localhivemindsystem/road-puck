@@ -1,0 +1,186 @@
+[
+ {
+  "lat": 51.4871852,
+  "lon": -0.1071411,
+  "type": "speed",
+  "maxspeed": null,
+  "direction": null,
+  "osm": "node/264803287"
+ },
+ {
+  "lat": 51.4878594,
+  "lon": -0.1064783,
+  "type": "speed",
+  "maxspeed": null,
+  "direction": null,
+  "osm": "node/295709723"
+ },
+ {
+  "lat": 51.4886309,
+  "lon": -0.1232351,
+  "type": "speed",
+  "maxspeed": null,
+  "direction": null,
+  "osm": "node/345868866"
+ },
+ {
+  "lat": 51.4923401,
+  "lon": -0.1252851,
+  "type": "speed",
+  "maxspeed": 20,
+  "direction": null,
+  "osm": "node/443424318"
+ },
+ {
+  "lat": 51.49149,
+  "lon": -0.135684,
+  "type": "speed",
+  "maxspeed": null,
+  "direction": null,
+  "osm": "node/506310017"
+ },
+ {
+  "lat": 51.4560786,
+  "lon": -0.0638575,
+  "type": "speed",
+  "maxspeed": null,
+  "direction": null,
+  "osm": "node/623993693"
+ },
+ {
+  "lat": 51.4560561,
+  "lon": -0.0639659,
+  "type": "speed",
+  "maxspeed": null,
+  "direction": null,
+  "osm": "node/623993696"
+ },
+ {
+  "lat": 51.4876593,
+  "lon": -0.1302619,
+  "type": "speed",
+  "maxspeed": null,
+  "direction": null,
+  "osm": "node/1284220434"
+ },
+ {
+  "lat": 51.5092328,
+  "lon": -0.0839695,
+  "type": "speed",
+  "maxspeed": null,
+  "direction": null,
+  "osm": "node/1590088452"
+ },
+ {
+  "lat": 51.5091521,
+  "lon": -0.0827543,
+  "type": "speed",
+  "maxspeed": null,
+  "direction": null,
+  "osm": "node/1590114998"
+ },
+ {
+  "lat": 51.4940523,
+  "lon": -0.0878621,
+  "type": "speed",
+  "maxspeed": null,
+  "direction": null,
+  "osm": "node/1675124019"
+ },
+ {
+  "lat": 51.4941182,
+  "lon": -0.0882136,
+  "type": "speed",
+  "maxspeed": null,
+  "direction": null,
+  "osm": "node/2247287185"
+ },
+ {
+  "lat": 51.50894,
+  "lon": -0.1555251,
+  "type": "speed",
+  "maxspeed": null,
+  "direction": null,
+  "osm": "node/2478366036"
+ },
+ {
+  "lat": 51.4646662,
+  "lon": -0.0838029,
+  "type": "speed",
+  "maxspeed": null,
+  "direction": null,
+  "osm": "node/3755978778"
+ },
+ {
+  "lat": 51.4531615,
+  "lon": -0.0870794,
+  "type": "speed",
+  "maxspeed": null,
+  "direction": null,
+  "osm": "node/3755978779"
+ },
+ {
+  "lat": 51.4277408,
+  "lon": -0.1684327,
+  "type": "speed",
+  "maxspeed": null,
+  "direction": null,
+  "osm": "node/7972133255"
+ },
+ {
+  "lat": 51.4888935,
+  "lon": -0.1300977,
+  "type": "speed",
+  "maxspeed": null,
+  "direction": null,
+  "osm": "node/9868862806"
+ },
+ {
+  "lat": 51.4736846,
+  "lon": -0.0813288,
+  "type": "speed",
+  "maxspeed": null,
+  "direction": null,
+  "osm": "node/9868874471"
+ },
+ {
+  "lat": 51.4909051,
+  "lon": -0.1339677,
+  "type": "speed",
+  "maxspeed": null,
+  "direction": null,
+  "osm": "node/9868883449"
+ },
+ {
+  "lat": 51.3923503,
+  "lon": -0.139487,
+  "type": "speed",
+  "maxspeed": 30,
+  "direction": null,
+  "osm": "node/12373777325"
+ },
+ {
+  "lat": 51.478916,
+  "lon": -0.115659,
+  "type": "speed",
+  "maxspeed": null,
+  "direction": "35",
+  "osm": "node/13043531991"
+ },
+ {
+  "lat": 51.5099967,
+  "lon": -0.1178638,
+  "type": "speed",
+  "maxspeed": 20,
+  "direction": null,
+  "osm": "node/13108429937"
+ },
+ {
+  "lat": 51.5085339,
+  "lon": -0.0701553,
+  "type": "speed",
+  "maxspeed": null,
+  "direction": null,
+  "osm": "node/13124506596"
+ }
+]

@@ -1,0 +1,420 @@
+{
+ "type": "FeatureCollection",
+ "name": "Safety cameras (OpenStreetMap)",
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.1071411,
+     51.4871852
+    ]
+   },
+   "properties": {
+    "id": "NODE-264803287",
+    "type": "speed",
+    "maxspeed": null,
+    "direction": null,
+    "osm": "node/264803287",
+    "source": "OpenStreetMap contributors (ODbL)"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.1064783,
+     51.4878594
+    ]
+   },
+   "properties": {
+    "id": "NODE-295709723",
+    "type": "speed",
+    "maxspeed": null,
+    "direction": null,
+    "osm": "node/295709723",
+    "source": "OpenStreetMap contributors (ODbL)"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.1232351,
+     51.4886309
+    ]
+   },
+   "properties": {
+    "id": "NODE-345868866",
+    "type": "speed",
+    "maxspeed": null,
+    "direction": null,
+    "osm": "node/345868866",
+    "source": "OpenStreetMap contributors (ODbL)"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.1252851,
+     51.4923401
+    ]
+   },
+   "properties": {
+    "id": "NODE-443424318",
+    "type": "speed",
+    "maxspeed": 20,
+    "direction": null,
+    "osm": "node/443424318",
+    "source": "OpenStreetMap contributors (ODbL)"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.135684,
+     51.49149
+    ]
+   },
+   "properties": {
+    "id": "NODE-506310017",
+    "type": "speed",
+    "maxspeed": null,
+    "direction": null,
+    "osm": "node/506310017",
+    "source": "OpenStreetMap contributors (ODbL)"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.0638575,
+     51.4560786
+    ]
+   },
+   "properties": {
+    "id": "NODE-623993693",
+    "type": "speed",
+    "maxspeed": null,
+    "direction": null,
+    "osm": "node/623993693",
+    "source": "OpenStreetMap contributors (ODbL)"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.0639659,
+     51.4560561
+    ]
+   },
+   "properties": {
+    "id": "NODE-623993696",
+    "type": "speed",
+    "maxspeed": null,
+    "direction": null,
+    "osm": "node/623993696",
+    "source": "OpenStreetMap contributors (ODbL)"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.1302619,
+     51.4876593
+    ]
+   },
+   "properties": {
+    "id": "NODE-1284220434",
+    "type": "speed",
+    "maxspeed": null,
+    "direction": null,
+    "osm": "node/1284220434",
+    "source": "OpenStreetMap contributors (ODbL)"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.0839695,
+     51.5092328
+    ]
+   },
+   "properties": {
+    "id": "NODE-1590088452",
+    "type": "speed",
+    "maxspeed": null,
+    "direction": null,
+    "osm": "node/1590088452",
+    "source": "OpenStreetMap contributors (ODbL)"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.0827543,
+     51.5091521
+    ]
+   },
+   "properties": {
+    "id": "NODE-1590114998",
+    "type": "speed",
+    "maxspeed": null,
+    "direction": null,
+    "osm": "node/1590114998",
+    "source": "OpenStreetMap contributors (ODbL)"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.0878621,
+     51.4940523
+    ]
+   },
+   "properties": {
+    "id": "NODE-1675124019",
+    "type": "speed",
+    "maxspeed": null,
+    "direction": null,
+    "osm": "node/1675124019",
+    "source": "OpenStreetMap contributors (ODbL)"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.0882136,
+     51.4941182
+    ]
+   },
+   "properties": {
+    "id": "NODE-2247287185",
+    "type": "speed",
+    "maxspeed": null,
+    "direction": null,
+    "osm": "node/2247287185",
+    "source": "OpenStreetMap contributors (ODbL)"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.1555251,
+     51.50894
+    ]
+   },
+   "properties": {
+    "id": "NODE-2478366036",
+    "type": "speed",
+    "maxspeed": null,
+    "direction": null,
+    "osm": "node/2478366036",
+    "source": "OpenStreetMap contributors (ODbL)"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.0838029,
+     51.4646662
+    ]
+   },
+   "properties": {
+    "id": "NODE-3755978778",
+    "type": "speed",
+    "maxspeed": null,
+    "direction": null,
+    "osm": "node/3755978778",
+    "source": "OpenStreetMap contributors (ODbL)"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.0870794,
+     51.4531615
+    ]
+   },
+   "properties": {
+    "id": "NODE-3755978779",
+    "type": "speed",
+    "maxspeed": null,
+    "direction": null,
+    "osm": "node/3755978779",
+    "source": "OpenStreetMap contributors (ODbL)"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.1684327,
+     51.4277408
+    ]
+   },
+   "properties": {
+    "id": "NODE-7972133255",
+    "type": "speed",
+    "maxspeed": null,
+    "direction": null,
+    "osm": "node/7972133255",
+    "source": "OpenStreetMap contributors (ODbL)"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.1300977,
+     51.4888935
+    ]
+   },
+   "properties": {
+    "id": "NODE-9868862806",
+    "type": "speed",
+    "maxspeed": null,
+    "direction": null,
+    "osm": "node/9868862806",
+    "source": "OpenStreetMap contributors (ODbL)"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.0813288,
+     51.4736846
+    ]
+   },
+   "properties": {
+    "id": "NODE-9868874471",
+    "type": "speed",
+    "maxspeed": null,
+    "direction": null,
+    "osm": "node/9868874471",
+    "source": "OpenStreetMap contributors (ODbL)"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.1339677,
+     51.4909051
+    ]
+   },
+   "properties": {
+    "id": "NODE-9868883449",
+    "type": "speed",
+    "maxspeed": null,
+    "direction": null,
+    "osm": "node/9868883449",
+    "source": "OpenStreetMap contributors (ODbL)"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.139487,
+     51.3923503
+    ]
+   },
+   "properties": {
+    "id": "NODE-12373777325",
+    "type": "speed",
+    "maxspeed": 30,
+    "direction": null,
+    "osm": "node/12373777325",
+    "source": "OpenStreetMap contributors (ODbL)"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.115659,
+     51.478916
+    ]
+   },
+   "properties": {
+    "id": "NODE-13043531991",
+    "type": "speed",
+    "maxspeed": null,
+    "direction": "35",
+    "osm": "node/13043531991",
+    "source": "OpenStreetMap contributors (ODbL)"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.1178638,
+     51.5099967
+    ]
+   },
+   "properties": {
+    "id": "NODE-13108429937",
+    "type": "speed",
+    "maxspeed": 20,
+    "direction": null,
+    "osm": "node/13108429937",
+    "source": "OpenStreetMap contributors (ODbL)"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.0701553,
+     51.5085339
+    ]
+   },
+   "properties": {
+    "id": "NODE-13124506596",
+    "type": "speed",
+    "maxspeed": null,
+    "direction": null,
+    "osm": "node/13124506596",
+    "source": "OpenStreetMap contributors (ODbL)"
+   }
+  }
+ ]
+}
