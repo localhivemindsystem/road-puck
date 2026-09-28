@@ -126,6 +126,8 @@ Run `node tools/test_engine.js` to check the rules against real Lambeth position
   Lambeth uses **PayByPhone**; `data/lambeth/parking_app.json` says which app a borough uses and how to open it, so
   other boroughs (RingGo in Croydon, for example) just need their own file. PayByPhone has no public link that opens
   the app with the location filled in, so the phone offers **Copy code** then **Open PayByPhone**.
+  Lambeth's [parking bays page](https://www.lambeth.gov.uk/parking/parking-restrictions/where-you-can-park/parking-bays)
+  also lists paying by phone call (020 7005 0055) and cash at PayPoint shops. It names no RingGo for street parking.
 - **No-entry restrictions** come from OpenStreetMap and are **not yet checked on the ground**: alerts say
   "CHECK THE SIGNS". After you've seen one, add it to `data/lambeth/restriction_checks.json` by its OSM way number
   (shown in the app's Data tab), e.g. `"123456789": {"verified": true, "note": "sign seen 1 Oct"}`, or

@@ -228,6 +228,7 @@ td.m{font-family:var(--mono);font-weight:500;font-size:14px;white-space:nowrap;f
             <button type="button" class="big" id="bCopy">Copy code<small id="bCopyHint">Paste it in the app</small></button>
             <a class="big primary" id="bPayApp" href="#" target="_blank" rel="noopener">Open app<small id="bPayAppHint">PayByPhone</small></a>
           </div>
+          <p class="note" id="payAlt" style="margin:0"></p>
         </div>
       </div>
 
@@ -528,6 +529,7 @@ function renderPark(pos, clk) {
     $('bPayApp').firstChild.textContent = `Open ${a.pay.app.name}`;
     $('bPayAppHint').textContent = 'Then enter the code';
     $('bCopy').dataset.code = a.pay.code;
+    $('payAlt').innerHTML = [a.pay.app.phone ? `Or call <a href="tel:${esc(a.pay.app.phone.replace(/\s/g, ''))}">${esc(a.pay.app.phone)}</a> and quote the code.` : '', a.pay.app.cash ? esc(a.pay.app.cash) + '.' : ''].filter(Boolean).join(' ');
   }
 }
 
