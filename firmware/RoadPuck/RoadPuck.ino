@@ -23,6 +23,7 @@
     OVER:   0 within the limit, 1 over (amber badge), 2 well over (flashing red badge)
     STATE:  X = don't enter (inside/at the closure while closed)
             C = closed ahead          W = closing soon
+            L = beside a bus lane you've already been warned about (quiet reminder: smaller word, thin ring)
             O = open to traffic       K = all clear
             R = wrong way down a one-way street (flashing)
             E = no entry: one-way street ahead against you
@@ -242,6 +243,7 @@ void drawAlert() {
   const char *word;
   switch (a.st) {
     case 'C': col = C_RED; word = "CLOSED"; break;
+    case 'L': col = C_RED; word = "CLOSED"; break;
     case 'E': col = C_RED; word = "NO ENTRY"; break;
     case 'W': col = C_AMBER; word = "CLOSING"; break;
     case 'S': col = a.over ? C_RED : C_AMBER; word = "CAMERA"; break;
@@ -259,7 +261,8 @@ void drawAlert() {
   if (a.limit > 0) drawBadge(a.limit, a.over);
   else if (gps[0]) drawFit(gps, 60, C_GREY, &F_TINY);
   drawFit(a.kind[0] ? a.kind : "ROAD PUCK", 122, col, &F_SMALL, &F_TINY);
-  drawFit(word, 238, col, &F_STATUS, &F_BIG);
+  if (a.st == 'L') drawFit(word, 238, col, &F_BIG);   // quiet reminder: smaller word
+  else drawFit(word, 238, col, &F_STATUS, &F_BIG);
   drawFit(a.road, 292, C_WHITE, &F_ROAD, &F_ROAD_S, &F_SMALL);
   if (dist[0]) {
     drawFit(dist, 378, C_WHITE, &F_BIG);
@@ -355,6 +358,7 @@ const char *DEMO[] = {
     "2|E|HEPWORTH RD|25|ONE WAY AGAINST YOU|6|ONE WAY STREET|NO ENTRY|20|0",
     "2|R|HEPWORTH RD|0|TURN AROUND SAFELY|6|ONE WAY STREET|WRONG WAY||0",
     "2|P|PAYBYPHONE 83349||MAX 4 H - TIL 18:30|5|PARKING|PAY||0",
+    "2|L|BRIXTON RD||KEEP OUT - 24 HOURS|6|BUS LANE|CLOSED|30|0",
     "2|P|RINGGO 11737||MAX 4 H - TIL 18:30|8|PARKING|PAY||0",
     "2|P|RINGGO 40000||CHECK THE SIGNS|8|CAR PARK|CHECK||0",
     "2|P|ZONE S STOCKWELL||PERMIT TIL 17:30|5|PARKING|PERMIT||0",

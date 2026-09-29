@@ -316,5 +316,36 @@ console.log('\nParking apps');
   check('Puck message for a car park has 10 fields and word PAY', msg.length === 10 && msg[1] === 'P' && msg[7] === 'PAY', E.puckMessage(kp));
 }
 
+// ---------- long bus lanes: warn once, then a quiet reminder ----------
+console.log('\nLong bus lanes');
+{
+  const bus = lanes;
+  const bx = bus.filter(l => l.road === 'Brixton Road' && l.direction === 'South');
+  const dir = bx[0].dir, ux = Math.sin(dir * Math.PI / 180), uy = Math.cos(dir * Math.PI / 180);
+  const pts = bx.flatMap(l => l.lines.flat()).sort((a, b) => (a[0] * ux + a[1] * uy) - (b[0] * ux + b[1] * uy));
+  const route = [];
+  for (let i = 0; i < pts.length - 1; i++) {
+    const a = pts[i], b = pts[i + 1], seg = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    for (let d = 0; d < seg; d += 10) route.push([a[0] + (b[0] - a[0]) * d / seg, a[1] + (b[1] - a[1]) * d / seg]);
+  }
+  const mem = {}, voice = E.makeVoice(120000), states = [];
+  voice({ key: 'start', st: 'N' }, 0);
+  let busSaid = 0;
+  for (let i = 1; i < route.length; i++) {
+    const hd = E.bearing(route[i - 1], route[i]);
+    const a = E.evaluate([], { x: route[i][0], y: route[i][1], acc: 6, speed: 10, heading: hd }, MON('08:00'), { bus, mem, fixId: i });
+    if (voice(a, i * 1000) && a.kind === 'BUS LANE') busSaid++;
+    states.push(a.st);
+  }
+  const quiet = states.slice(10).filter(s => s === 'L').length, shown = states.slice(10).length;
+  check(`Brixton Road southbound, ${Math.round(route.length * 10)} m beside bus lanes, Mon 08:00: bus lane spoken once`, busSaid === 1, `spoken ${busSaid} times`);
+  check('After the first few seconds the screen is the quiet reminder (L), not CLOSED', states.slice(0, 8).every(s => s === 'C') && quiet / shown > 0.85,
+    `first 8 s: ${states.slice(0, 8).join('')}; after: ${quiet}/${shown} quiet`);
+  const v = E.makeVoice(120000); v({ key: 'x', st: 'N' }, 0);
+  const y = { key: 'Y|BOX|A', st: 'Y' }, k = { key: 'K', st: 'K' };
+  const r = [v(y, 1000), v(k, 2000), v(y, 3000), v(k, 4000), v(y, 200000), v({ key: 'C|q', st: 'C', quiet: true }, 201000)];
+  check('Voice: same alert not repeated within 2 minutes, quiet alerts never spoken', r.join() === 'true,false,false,false,true,false', r.join());
+}
+
 console.log(fails ? `\n${fails} FAILED` : '\nAll checks passed');
 process.exit(fails ? 1 : 0);

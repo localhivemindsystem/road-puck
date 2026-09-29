@@ -66,6 +66,8 @@ body[data-tab="drive"] #v-drive, body[data-tab="map"] #v-map, body[data-tab="dat
 .dash[data-st="C"] .band{background:var(--red);color:var(--on-color)}
 .dash[data-st="C"]{border-color:var(--red)}
 .dash[data-st="C"] .detail{color:var(--ink)}
+.dash[data-st="L"] .band{background:#3A0F0C;color:var(--red-ink)}
+.dash[data-st="L"]{border-color:#7A1E18}
 .dash[data-st="W"] .band{background:var(--amber);color:var(--on-color)}
 .dash[data-st="W"]{border-color:var(--amber)}
 .dash[data-st="O"] .band{background:var(--green);color:var(--on-color)}
@@ -602,8 +604,8 @@ function drawPuck(msg) {
     fit(detail, 420, '#fff', [PF.SMALL, PF.TINY]);
     return;
   }
-  const col = { C: '#FF3B30', E: '#FF3B30', W: '#FFB020', P: '#FFB020', S: over ? '#FF3B30' : '#FFB020', Y: '#FFB020', O: '#3DDC84', F: '#3DDC84', G: '#FFB020' }[st] || '#3DDC84';
-  const word = wordIn || ({ C: 'CLOSED', E: 'NO ENTRY', W: 'CLOSING', O: 'OPEN', G: 'NO GPS', P: 'PERMIT', F: 'FREE', S: 'CAMERA', Y: 'KEEP CLEAR' }[st] || 'CLEAR');
+  const col = { C: '#FF3B30', L: '#FF3B30', E: '#FF3B30', W: '#FFB020', P: '#FFB020', S: over ? '#FF3B30' : '#FFB020', Y: '#FFB020', O: '#3DDC84', F: '#3DDC84', G: '#FFB020' }[st] || '#3DDC84';
+  const word = wordIn || ({ C: 'CLOSED', L: 'CLOSED', E: 'NO ENTRY', W: 'CLOSING', O: 'OPEN', G: 'NO GPS', P: 'PERMIT', F: 'FREE', S: 'CAMERA', Y: 'KEEP CLEAR' }[st] || 'CLEAR');
   const strong = st === 'C' || st === 'E' || (st === 'S' && over);
   disc(col); disc('#000', 233 - (strong ? 14 : 8));
   if (limit) {
@@ -615,7 +617,7 @@ function drawPuck(msg) {
     pv.fillText(String(limit), 233, cy + capH(PF.ROAD) / 2);
   } else if (acc !== '') fit(`GPS ${acc} M`, 60, '#9AA4AE', [PF.TINY]);
   fit(kind || 'ROAD PUCK', 122, col, [PF.SMALL, PF.TINY]);
-  fit(word, 238, col, [PF.STATUS, PF.BIG]);
+  fit(word, 238, col, st === 'L' ? [PF.BIG] : [PF.STATUS, PF.BIG]);
   fit(road, 292, '#fff', [PF.ROAD, PF.ROAD_S, PF.SMALL]);
   if (distTxt) { fit(distTxt, 378, '#fff', [PF.BIG]); fit(detail, 424, strong ? '#fff' : '#9AA4AE', [PF.SMALL, PF.TINY]); }
   else fit(detail, 350, 'CEPF'.includes(st) ? '#fff' : '#9AA4AE', [PF.ROAD_S, PF.SMALL, PF.TINY]);
@@ -643,12 +645,10 @@ function speakOver(a) {  // one reminder when you first go well over the limit
   overSaid = a.limit;
   try { speechSynthesis.speak(Object.assign(new SpeechSynthesisUtterance(`Speed limit ${a.limit}.`), { lang: 'en-GB' })); } catch (e) {}
 }
+const voiceSays = E.makeVoice(120000);   // new alerts only; the same one never twice in 2 minutes
 function speak(a) {
   speakOver(a);
-  const key = a.key;
-  if (key === S.spokenKey) return;
-  const prev = S.spokenKey; S.spokenKey = key;
-  if (!S.sound || !prev) return;
+  if (!voiceSays(a, Date.now()) || !S.sound) return;
   const road = a.f ? a.f.road : a.road.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
   const line = a.st === 'S' ? (a.kind === 'RED LIGHT CAMERA' ? 'Red light camera ahead.' : `Speed camera ahead.${a.cam && (a.cam.maxspeed || a.limit) ? ` ${a.cam.maxspeed || a.limit} limit.` : ''}`)
     : a.st === 'Y' ? 'Yellow box junction ahead. Only enter if your exit is clear.'

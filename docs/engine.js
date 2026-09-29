@@ -498,7 +498,7 @@
   // ================= the decision =================
   // pos = { x, y (metres), acc (m), speed (m/s or null), heading (deg or null) }
   // ctx = { roads, zones, parked, mem }  (all optional; mem is a {} the caller keeps between calls)
-  const SEVERITY = { N: 0, K: 1, G: 1, F: 1, P: 1, O: 2, W: 3, Y: 3, C: 4, E: 4, S: 4, X: 5, R: 5 };
+  const SEVERITY = { N: 0, K: 1, G: 1, F: 1, P: 1, O: 2, L: 2, W: 3, Y: 3, C: 4, E: 4, S: 4, X: 5, R: 5 };
 
   function evaluate(feats, pos, clock, ctx = {}) {
     const mem = ctx.mem || (ctx.mem = {});
@@ -629,7 +629,24 @@
       });
     }
     // --- bus lanes on this road, in this direction ---
-    let busWarn = null, busAlong = null;
+    // A long bus lane is stored as many pieces. Pieces on the same road in the same direction form one stretch:
+    // full warning (and voice) once when you join a stretch, then a quiet reminder while you drive beside it,
+    // including across junction gaps. The stretch is forgotten after 400 m with no bus lane.
+    let busWarn = null, busAlong = null, busRemind = null;
+    const busMk = (l, st, dist, quiet) => {
+      const road = l.road.toUpperCase(), rs = shortName(l.road), corr = l.road + '|' + l.direction;
+      const who = l.vehicles.replace(/ and /i, ', ').toUpperCase();
+      const until = st.allDay ? 'IN FORCE 24 HOURS' : `IN FORCE UNTIL ${fmt(st.until)}`;
+      const keep = st.allDay ? 'KEEP OUT - 24 HOURS' : `KEEP OUT TIL ${fmt(st.until)}`;
+      if (quiet === 'remind') return mk('L', {
+        ...extra, kind: 'BUS LANE', word: 'CLOSED', road, roadShort: rs, dist: null, detail: until, puckDetail: keep,
+        instr: `Bus lane alongside: stay out of it. ${who} only.`, lane: l, key: 'L|BUS|' + corr, quiet: true,
+      });
+      return mk('C', {
+        ...extra, kind: 'BUS LANE', word: 'CLOSED', road, roadShort: rs, dist, detail: until, puckDetail: keep,
+        instr: `Stay out of the bus lane. ${who} only.`, lane: l, key: 'C|BUS|' + corr, quiet: !!quiet,
+      });
+    };
     if (ctx.bus && moving) {
       const maxD = 15 + Math.min(pos.acc || 0, 15);
       const h = pos.heading * Math.PI / 180;
@@ -638,26 +655,38 @@
       const hit = on || soon;
       if (hit) {
         const l = hit.l, st = busStatus(l, clock), road = l.road.toUpperCase(), rs = shortName(l.road);
-        const who = l.vehicles.replace(/ and /i, ', ').toUpperCase();
-        const dist = on ? null : 60;
+        const dist = on ? null : 60, corr = l.road + '|' + l.direction;
+        let s = mem.busStretch;
+        const gap = s ? Math.hypot(p[0] - s.last[0], p[1] - s.last[1]) : Infinity;
+        if (!s || s.id !== corr || s.k !== st.k || gap > 400) s = mem.busStretch = { id: corr, k: st.k, n: 0, quiet: false };
+        else if (gap > 120) { s.n = 0; s.quiet = true; }   // starts again after a real gap: show it again, silently
+        s.last = p; s.n++; s.l = l; s.st = st;
         if (st.k === 'closed') {
-          const busC = mk('C', {
-            ...extra, kind: 'BUS LANE', word: 'CLOSED', road, roadShort: rs, dist,
-            detail: st.allDay ? 'IN FORCE 24 HOURS' : `IN FORCE UNTIL ${fmt(st.until)}`,
-            puckDetail: st.allDay ? 'KEEP OUT - 24 HOURS' : `KEEP OUT TIL ${fmt(st.until)}`,
-            instr: `Stay out of the bus lane. ${who} only.`, lane: l,
-          });
-          if (!on) return busC;       // a bus lane starting just ahead
-          busAlong = busC;            // already beside it: hazards just ahead come first
+          if (s.n <= 8) {                                  // first few seconds of this stretch: full warning
+            const busC = busMk(l, st, dist, s.quiet);
+            if (!on) return busC;                          // a bus lane starting just ahead
+            busAlong = busC;                               // already beside it: hazards just ahead come first
+          } else busRemind = busMk(l, st, null, 'remind');
         }
         if (st.k === 'closing') busWarn = mk('W', {
           ...extra, kind: 'BUS LANE', word: 'CLOSING', road, roadShort: rs, dist,
           detail: `IN FORCE FROM ${fmt(st.at)}`, puckDetail: `FROM ${fmt(st.at)}`,
-          instr: `The bus lane comes into force in ${st.inMin} min. Leave it before ${fmt(st.at)}.`, lane: l,
+          instr: `The bus lane comes into force in ${st.inMin} min. Leave it before ${fmt(st.at)}.`, lane: l, key: 'W|BUS|' + corr,
         });
         mem.busOpen = st.k === 'open' ? { l, st, road, rs, dist } : null;  // open lanes are shown only if nothing else is going on
-      } else mem.busOpen = null;
-    } else mem.busOpen = null;
+      } else { mem.busOpen = null; holdBus(); }
+    } else { mem.busOpen = null; if (ctx.bus) holdBus(); }   // stopped at lights beside a bus lane: keep what was showing
+    function holdBus() {   // junction between pieces, a GPS wobble, or a stop: hold the stretch for up to 120 m
+      const s = mem.busStretch;
+      if (!s) return;
+      const gap = Math.hypot(p[0] - s.last[0], p[1] - s.last[1]);
+      if (gap > 400) { mem.busStretch = null; return; }
+      if (gap > 120 || s.k !== 'closed') return;
+      const st = busStatus(s.l, clock);
+      if (st.k !== 'closed') return;
+      if (s.n > 8) busRemind = busMk(s.l, st, null, 'remind');
+      else busAlong = busMk(s.l, st, null, s.quiet);
+    }
 
     // --- bus gate / no motor vehicles / pedestrian zone / timed no entry ahead ---
     let restrWarn = null;
@@ -702,6 +731,7 @@
         detail: box.d ? 'ENTER ONLY IF YOUR EXIT IS CLEAR' : "DON'T STOP IN THE BOX",
         puckDetail: box.d ? 'EXIT MUST BE CLEAR' : "DON'T STOP IN BOX",
         instr: 'Yellow box: only enter when your exit is clear (you may wait in it to turn right).', box: box.bx,
+        key: 'Y|BOX|' + box.bx.junction.replace(/\s*\(.*?\)\s*/g, ' ').trim(),   // a junction can have several box shapes: announce it once
       });
     }
 
@@ -714,6 +744,7 @@
     });
     if (busWarn) return busWarn;
     if (restrWarn) return restrWarn;
+    if (busRemind && !ctx.parked) return busRemind;   // quiet: beside a bus lane you've already been warned about
 
     // --- parked: what are the parking rules here? ---
     if (ctx.parked && (ctx.zones || ctx.pbp || ctx.cps)) {
@@ -861,7 +892,8 @@
       lane: o.lane || null,
       restr: o.restr || null, cam: o.cam || null, box: o.box || null, camOver: !!o.camOver,
       limit: null, mph: null, over: 0,
-      key: st + (o.kind || '') + (f ? f.id : o.lane ? o.lane.id : o.restr ? o.restr.id : o.cam ? o.cam.id : o.box ? o.box.id : o.road || ''),
+      quiet: !!o.quiet,
+      key: o.key || st + (o.kind || '') + (f ? f.id : o.lane ? o.lane.id : o.restr ? o.restr.id : o.cam ? o.cam.id : o.box ? o.box.id : o.road || ''),
     };
   }
 
@@ -885,6 +917,22 @@
     };
   }
 
+  // ---- when to speak: new alerts only, never the same one twice within repeatMs, never quiet ones ----
+  const VOICED = 'CWXRESY';
+  function makeVoice(repeatMs = 120000) {
+    let lastKey = null;
+    const said = new Map();
+    return function (a, nowMs) {
+      if (a.key === lastKey) return false;
+      const first = lastKey === null;
+      lastKey = a.key;
+      if (first || a.quiet || !VOICED.includes(a.st)) return false;
+      if (said.has(a.key) && nowMs - said.get(a.key) < repeatMs) return false;
+      said.set(a.key, nowMs);
+      return true;
+    };
+  }
+
   // ---- message for the puck ----
   function clean(s) { return String(s || '').toUpperCase().replace(/[|]/g, '/').replace(/[^\x20-\x5A]/g, ' ').replace(/\s+/g, ' ').trim(); }
   // v2: 2|STATE|ROAD|DIST|DETAIL|ACC|KIND|WORD|LIMIT|OVER
@@ -899,7 +947,7 @@
   }
 
   const api = {
-    LON0, LAT0, toM, toLL, loadFeatures, nearest, londonNow, inTerm, status, evaluate, makeTracker, puckMessage,
+    LON0, LAT0, toM, toLL, loadFeatures, nearest, londonNow, inTerm, status, evaluate, makeTracker, makeVoice, puckMessage,
     fmt, fmtDist, bearing, angleDiff, parseTimings, loadZones, inZone, zoneStatus, parkingAt, whenText, loadRoads, matchRoad, shortName, DAYS,
     parseHours, loadBusLanes, busStatus, matchBusLane, loadPayByPhone, nearestPayByPhone, parsePayHours, payStatus, priceText, loadCarParks, appFor,
     parseConditional, loadRestrictions, nearestNamed, restrStatus, matchRestriction, loadCameras, loadYellowBoxes, boxDist, aheadOf,

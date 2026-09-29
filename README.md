@@ -80,6 +80,7 @@ For every closure the engine measures the distance to the closed stretch of road
 | **WRONG WAY** (flashing red) | Two GPS readings in a row on a one-way street, travelling against its direction. |
 | **NO ENTRY** | The street 25-45 m straight ahead is one-way against you (and isn't the road you're on). |
 | **BUS LANE: CLOSED / CLOSING / OPEN** | You're on a road with a bus lane, travelling its way, and it is in force / starts within 15 min / not in force. GPS can't tell lanes apart, so this tells you the rule, not that you're in the lane. |
+| **BUS LANE: CLOSED (quiet)** | Still beside a bus lane you've already been warned about: smaller word, thin ring, no sound. The full warning and voice come once per stretch of bus lane (same road, same direction), for its first few seconds; junction gaps don't restart it. A lane that starts again after a gap of 120-400 m flashes up the full screen silently; after 400 m with no bus lane, the next one is a new stretch. |
 | **PAY / PERMIT / FREE** | Stopped for 15 seconds. PAY: a pay-by-phone bay within about 45 m is charging now (shows the app and location code, max stay, until when). PERMIT: the zone is controlled and there's no pay bay on this street (the phone names the nearest one). FREE: controls are off, and until when. |
 | **NO ENTRY** (bus gate, no motor vehicles, pedestrian zone, timed) | The restricted street is 30-80 m straight ahead, lined up with your direction, and in force. |
 | **DON'T ENTER** (restricted street) | Two GPS readings in a row on a restricted street while it's in force. |
@@ -90,8 +91,13 @@ For every closure the engine measures the distance to the closed stretch of road
 
 When several things apply, the puck shows the most urgent:
 DON'T ENTER / WRONG WAY, then CAMERA, then School Street CLOSED, then NO ENTRY ahead, then KEEP CLEAR,
-then a bus lane you're driving beside, then anything CLOSING, then parking, then OPEN / CLEAR.
-A bus lane that starts just ahead of you counts as CLOSED ahead.
+then a bus lane you've just joined, then anything CLOSING, then the quiet bus lane reminder, then parking,
+then OPEN / CLEAR. A bus lane that starts just ahead of you counts as CLOSED ahead.
+
+**Voice:** each alert is spoken once when it first appears, and the same alert is never spoken again within
+2 minutes, so flicking to another screen and back stays silent. A junction with several yellow box shapes is
+announced once. `node tools/sim_drive.js "Brixton Road" South` drives a simulated car along a bus lane and
+prints everything the driver would hear and see.
 
 - **Look-ahead zone:** 250 m when slow, growing with speed up to 600 m, plus GPS error (capped at 50 m).
 - **"In front of you":** within 75° of your direction of travel. When you're stopped there's no direction, so every nearby closure counts; the engine errs on the side of warning.

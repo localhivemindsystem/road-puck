@@ -99,7 +99,7 @@ def screen(msg):
         fit(d, road, 378, WHITE, "ROAD", "ROAD_S", "SMALL")
         fit(d, detail, 420, WHITE, "SMALL", "TINY")
         return img
-    col, w0 = {"C": (RED, "CLOSED"), "E": (RED, "NO ENTRY"), "W": (AMBER, "CLOSING"), "P": (AMBER, "PERMIT"),
+    col, w0 = {"C": (RED, "CLOSED"), "L": (RED, "CLOSED"), "E": (RED, "NO ENTRY"), "W": (AMBER, "CLOSING"), "P": (AMBER, "PERMIT"),
                "S": (RED if over else AMBER, "CAMERA"), "Y": (AMBER, "KEEP CLEAR"),
                "O": (GREEN, "OPEN"), "F": (GREEN, "FREE"), "G": (AMBER, "NO GPS")}.get(st, (GREEN, "CLEAR"))
     word = word or w0
@@ -110,7 +110,7 @@ def screen(msg):
     elif acc:
         fit(d, f"GPS {acc} M", 60, GREY, "TINY")
     fit(d, kind or "ROAD PUCK", 122, col, "SMALL", "TINY")
-    fit(d, word, 238, col, "STATUS", "BIG")
+    fit(d, word, 238, col, *(("BIG",) if st == "L" else ("STATUS", "BIG")))
     fit(d, road, 292, WHITE, "ROAD", "ROAD_S", "SMALL")
     if dist >= 0:
         fit(d, fmt_dist(dist), 378, WHITE, "BIG")
