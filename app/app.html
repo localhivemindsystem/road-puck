@@ -259,6 +259,7 @@ td.m{font-family:var(--mono);font-weight:500;font-size:14px;white-space:nowrap;f
         <div class="puckwrap">
           <canvas id="puckView" width="466" height="466" aria-label="What the puck is showing"></canvas>
           <p class="note" id="puckNote" style="margin:0">This is exactly what the puck shows. Connect it with the button above.</p>
+          <p class="note" id="puckHealth" style="margin:0" hidden></p>
         </div>
       </div>
 
@@ -338,7 +339,7 @@ td.m{font-family:var(--mono);font-weight:500;font-size:14px;white-space:nowrap;f
       </div>
       <div class="card">
         <div class="stats"><span><b id="nCams">0</b>safety cameras</span><span><b id="nBoxes">0</b>yellow boxes</span><span><b id="nLimits">0%</b>streets with a speed limit</span></div>
-        <p class="note" style="margin:0">Speed limits and cameras come from OpenStreetMap, which is kept up by volunteers: treat both as a guide and let the signs win. TfL says London has over 800 fixed speed and red-light cameras; only the ones mapped in OpenStreetMap are here, so there will be gaps. Yellow box junctions come from <a href="https://gis-tfl.opendata.arcgis.com/" target="_blank" rel="noopener">TfL open data</a>. Files: <a href="data/cameras.geojson" target="_blank" rel="noopener">cameras.geojson</a> &middot; <a href="data/yellow_boxes.geojson" target="_blank" rel="noopener">yellow_boxes.geojson</a></p>
+        <p class="note" style="margin:0">Speed limits come from <a href="https://services1.arcgis.com/YswvgzOodUvqkoCN/arcgis/rest/services/Speed_Limits_Feedback/FeatureServer/10" target="_blank" rel="noopener">TfL's London speed limit map</a> (updated March 2026, combining Ordnance Survey, borough and OpenStreetMap records) wherever it lines up with our street map, and from OpenStreetMap elsewhere: treat them as a guide and let the signs win. Cameras come from OpenStreetMap, which is kept up by volunteers. TfL says London has over 800 fixed speed and red-light cameras; only the ones mapped in OpenStreetMap are here, so there will be gaps. Yellow box junctions come from <a href="https://gis-tfl.opendata.arcgis.com/" target="_blank" rel="noopener">TfL open data</a>. Files: <a href="data/cameras.geojson" target="_blank" rel="noopener">cameras.geojson</a> &middot; <a href="data/yellow_boxes.geojson" target="_blank" rel="noopener">yellow_boxes.geojson</a></p>
       </div>
       <div class="tablewrap">
         <table>
@@ -409,7 +410,7 @@ const S = {
   timeMode: 'live', custom: { day: 1, min: 520 }, termMode: store.get('term', 'auto'),
   sound: store.get('sound', true),
   follow: true, sel: null, alert: null, spokenKey: '',
-  puck: { dev: null, chr: null, busy: false, queued: null, last: '', lastSent: 0 },
+  puck: { dev: null, chr: null, busy: false, queued: null, last: '', lastSent: 0, boots: null, restarts: [], health: null, tries: 0 },
   zones: [], roads: null, mem: {}, stillSince: null, simParked: false,
   layers: { school: true, bus: true, parking: true, oneway: true, restr: true, speed: true, boxes: true },
 };
@@ -736,7 +737,32 @@ function simMoveTo(x, y) {
 }
 
 // ---------- Bluetooth puck ----------
-const SVC = '7a1e0001-3c4b-4d2a-9f6e-2b8c5d1a0e10', CHR = '7a1e0002-3c4b-4d2a-9f6e-2b8c5d1a0e10';
+const SVC = '7a1e0001-3c4b-4d2a-9f6e-2b8c5d1a0e10', CHR = '7a1e0002-3c4b-4d2a-9f6e-2b8c5d1a0e10', STATUS = '7a1e0003-3c4b-4d2a-9f6e-2b8c5d1a0e10';
+// what the puck says about its last restart (firmware from 29 Sep 2026 on)
+const WHY = {
+  BROWNOUT: 'power dip: the car USB socket sagged', GLITCH: 'power dip: the car USB socket sagged',
+  POWERON: 'power cut: the socket switched off or the cable moved', PANIC: 'crash', WATCHDOG: 'froze',
+  SOFTWARE: 'software restart', USB: 'USB reset', EXT: 'reset button',
+};
+function parseStatus(txt) { const o = {}; String(txt).split(';').forEach(kv => { const i = kv.indexOf('='); if (i > 0) o[kv.slice(0, i)] = kv.slice(i + 1); }); return o; }
+async function readHealth(svc) {
+  let st;
+  try { const c = await svc.getCharacteristic(STATUS); st = parseStatus(new TextDecoder().decode(await c.readValue())); }
+  catch (e) { return; }   // older firmware: no status
+  const P = S.puck, boots = Number(st.boots) || 0;
+  if (P.boots != null && boots > P.boots) {   // it restarted while we were using it
+    const why = WHY[st.last] || st.last.toLowerCase();
+    P.restarts.push({ at: new Date(), why: st.last, task: st.ctask, pc: st.cpc });
+    toast(`The puck restarted: ${why}.${st.last === 'BROWNOUT' || st.last === 'GLITCH' ? ' Try a 2 A car charger and a short cable.' : st.last === 'PANIC' ? ` (${st.ctask} ${st.cpc})` : ''}`);
+  }
+  P.boots = boots; P.health = st;
+  const el = $('puckHealth');
+  const dips = Number(st.dips) || 0, crashes = Number(st.crashes) || 0, froze = Number(st.froze) || 0;
+  el.hidden = false;
+  el.textContent = `Puck: start ${boots}, running ${Math.round((Number(st.up) || 0) / 60)} min. Restarts this drive: ${P.restarts.length}` +
+    (P.restarts.length ? ` (last: ${WHY[P.restarts.at(-1).why] || P.restarts.at(-1).why})` : '') +
+    `. Since first use: ${dips} power dip${dips === 1 ? '' : 's'}, ${crashes} crash${crashes === 1 ? '' : 'es'}${crashes && st.ctask ? ` (last in ${st.ctask} at ${st.cpc})` : ''}, ${froze} freeze${froze === 1 ? '' : 's'}.`;
+}
 function puckUI(state, text) {
   const c = $('chipPuck'); c.className = 'chip ' + (state === 'on' ? 'on' : state === 'busy' ? 'warn' : '');
   c.lastElementChild.textContent = text;
@@ -764,20 +790,27 @@ async function attach() {
   const server = await S.puck.dev.gatt.connect();
   const svc = await server.getPrimaryService(SVC);
   S.puck.chr = await svc.getCharacteristic(CHR);
+  S.puck.busy = false; S.puck.queued = null; S.puck.tries = 0;
   puckUI('on', S.puck.dev.name || 'Puck on');
   S.puck.last = ''; sendPuck(E.puckMessage(S.alert));
+  readHealth(svc);
 }
 async function onPuckLost() {
   S.puck.chr = null;
-  if (!S.puck.dev) { puckUI('off', 'Puck off'); return; }
-  puckUI('busy', 'Reconnecting');
-  for (let i = 0; i < 5 && S.puck.dev; i++) {
-    await new Promise(r => setTimeout(r, 1500 * (i + 1)));
-    try { await attach(); return; } catch (e) {}
+  if (!S.puck.dev || S.puck.reconnecting) { if (!S.puck.dev) puckUI('off', 'Puck off'); return; }
+  S.puck.reconnecting = true;
+  // keep trying until it's back (a restart takes a few seconds) or you tap to disconnect
+  while (S.puck.dev && !S.puck.chr) {
+    const n = ++S.puck.tries;
+    puckUI('busy', n > 1 ? `Reconnecting (${n})` : 'Reconnecting');
+    await new Promise(r => setTimeout(r, n < 3 ? 1500 : 4000));
+    if (!S.puck.dev) break;
+    try { await attach(); } catch (e) {}
   }
-  puckUI('off', 'Puck lost');
+  S.puck.reconnecting = false;
+  if (!S.puck.dev) puckUI('off', 'Puck off');
 }
-function disconnectPuck() { const d = S.puck.dev; S.puck.dev = null; S.puck.chr = null; try { d && d.gatt.disconnect(); } catch (e) {} puckUI('off', 'Puck off'); }
+function disconnectPuck() { const d = S.puck.dev; S.puck.dev = null; S.puck.chr = null; S.puck.restarts = []; S.puck.boots = null; try { d && d.gatt.disconnect(); } catch (e) {} puckUI('off', 'Puck off'); }
 $('bPuck').onclick = () => (S.puck.chr ? disconnectPuck() : connectPuck());
 async function sendPuck(msg) {
   const P = S.puck;

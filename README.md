@@ -153,7 +153,13 @@ Run `node tools/test_engine.js` to check the rules against real Lambeth position
   (shown in the app's Data tab), e.g. `"123456789": {"verified": true, "note": "sign seen 1 Oct"}`, or
   `"verified": false` to switch a wrong one off, then run `python3 tools/build_dataset.py`.
   Timed restrictions that sit on a council School Street are dropped in favour of the council's times.
-- **Speed limits** are recorded for 92% of Lambeth's streets in OpenStreetMap (mostly 20 mph). Unknown limits show no badge.
+- **Speed limits** come from **TfL's London speed limit map** (`Speed_Limits_Feedback` layer, "Speed_Limits_Processed",
+  updated March 2026), which combines Ordnance Survey, borough, TfL and OpenStreetMap records. Each street in our map
+  takes TfL's limit where a TfL segment runs along it (within 12 m, same direction, same road name preferred);
+  otherwise it keeps OpenStreetMap's. That fixed 697 street pieces OpenStreetMap still had at 30 mph, including all of
+  the A23 Streatham High Road, Brixton Road, Brixton Hill and Stockwell Road, which are 20 mph. 5 and 10 mph limits on
+  private and estate roads are left as OpenStreetMap has them. 98% of streets now have a limit; unknown limits show
+  no badge. Raw data: `tools/source/tfl_speed_limits_raw.json`.
 - **Cameras**: only the 23 mapped in OpenStreetMap so far. TfL says London has over 800 fixed speed and red-light
   cameras, so expect gaps; a proper camera list is the next data job.
 - **Yellow boxes** come from TfL's yellow box junction layer (TfL roads and some borough roads).
@@ -162,6 +168,20 @@ Run `node tools/test_engine.js` to check the rules against real Lambeth position
   [Open Database License](https://www.openstreetmap.org/copyright).
 
 Road signs always take priority over the app.
+
+## If the puck restarts or loses the phone
+
+- The puck remembers **why it last restarted** and shows it at the top of its CONNECT screen, e.g.
+  `START 12 - POWER DIP`. The phone app reads the same record whenever it connects and says so if the puck restarted
+  while you were driving; the puck card on the Drive tab lists restarts this drive and since first use.
+  - **POWER DIP**: the supply voltage sagged. Car USB sockets often give only 0.5-1 A and dip when the engine
+    starts (including stop-start). Use a 12 V socket charger rated 2 A or more and a short, decent USB-C cable.
+  - **POWER ON**: the power was cut completely (socket switched off, or the cable moved).
+  - **CRASH** / **FROZE**: a bug. The app shows where (task name and address): send that to fix it.
+- A dropped Bluetooth link without a restart shows **LINK LOST / RECONNECTING** instead of CONNECT. The app keeps
+  reconnecting on its own until the puck is back. Chrome must stay open on screen (the page keeps the phone awake
+  while GPS runs); if Android puts Chrome in the background, GPS and Bluetooth stop.
+- The puck runs at 160 MHz (enough for drawing) to draw less current.
 
 ## Rebuilding
 

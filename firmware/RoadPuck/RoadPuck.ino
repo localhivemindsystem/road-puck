@@ -36,6 +36,11 @@
 
   BOOT button: short press = brightness (bright / medium / night)
                hold 2 s    = demo mode on/off (cycles sample screens, no phone needed)
+
+  Restarts: the puck remembers why it last restarted (power dip, power cut, crash, freeze) and how
+  often, shows it at the top of the CONNECT screen, and the phone app reads it over Bluetooth
+  (status characteristic 7a1e0003-...). A dropped Bluetooth link shows LINK LOST instead of CONNECT,
+  so a link drop and a real restart look different.
 */
 
 #include <Arduino.h>
@@ -43,6 +48,9 @@
 #include <BLEDevice.h>
 #include <BLEServer.h>
 #include <BLEUtils.h>
+#include <Preferences.h>
+#include "esp_system.h"
+#include "esp_core_dump.h"
 #include "fonts.h"
 #include "alert.h"
 
@@ -61,6 +69,7 @@
 // ---------- Bluetooth IDs (the phone app uses the same ones) ----------
 #define PUCK_SERVICE_UUID "7a1e0001-3c4b-4d2a-9f6e-2b8c5d1a0e10"
 #define PUCK_ALERT_UUID   "7a1e0002-3c4b-4d2a-9f6e-2b8c5d1a0e10"
+#define PUCK_STATUS_UUID  "7a1e0003-3c4b-4d2a-9f6e-2b8c5d1a0e10"   // read: restart counts and last reason
 
 // ---------- colours (RGB565) ----------
 static inline uint16_t rgb(uint8_t r, uint8_t g, uint8_t b) { return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3); }
@@ -86,10 +95,17 @@ volatile bool pending = false;   // a new message arrived
 char inbox[200];                 // raw message from Bluetooth
 portMUX_TYPE inboxLock = portMUX_INITIALIZER_UNLOCKED;
 volatile bool linked = false;
+bool everLinked = false;          // linked at least once since power-up
+uint32_t lostMs = 0;              // when the link dropped
 uint32_t lastMsgMs = 0;
 char puckName[20];
 
-enum Screen { SCR_NONE, SCR_CONNECT, SCR_WAITING, SCR_ALERT };
+// why the puck last restarted, kept across restarts in flash (Preferences)
+char bootLine[40] = "";           // shown on the CONNECT screen, e.g. "START 12 - POWER DIP"
+char statusText[180] = "";        // read by the phone app
+uint32_t bootCount = 0;
+
+enum Screen { SCR_NONE, SCR_CONNECT, SCR_WAITING, SCR_LOST, SCR_ALERT };
 Screen screen = SCR_NONE;
 bool pulseOn = true;
 uint32_t pulseMs = 0;
@@ -178,14 +194,70 @@ void formatDist(int m, char *out, size_t n) {
   else snprintf(out, n, "%d.%d KM", m / 1000, (m % 1000) / 100);
 }
 
+// ================= restarts =================
+void recordBoot() {
+  esp_reset_reason_t r = esp_reset_reason();
+  const char *why = "OTHER", *code = "OTHER";
+  switch (r) {
+    case ESP_RST_POWERON:   why = "POWER ON";   code = "POWERON"; break;   // switched on, or the power was cut
+    case ESP_RST_BROWNOUT:  why = "POWER DIP";  code = "BROWNOUT"; break;  // supply voltage sagged
+    case ESP_RST_PANIC:     why = "CRASH";      code = "PANIC"; break;
+    case ESP_RST_INT_WDT:
+    case ESP_RST_TASK_WDT:
+    case ESP_RST_WDT:       why = "FROZE";      code = "WATCHDOG"; break;
+    case ESP_RST_SW:        why = "RESTART";    code = "SOFTWARE"; break;
+    case ESP_RST_USB:       why = "USB RESET";  code = "USB"; break;
+    case ESP_RST_EXT:       why = "RESET PIN";  code = "EXT"; break;
+    case ESP_RST_PWR_GLITCH:why = "POWER DIP";  code = "GLITCH"; break;
+    default: break;
+  }
+  Preferences p;
+  p.begin("puck", false);
+  bootCount = p.getUInt("boots", 0) + 1;
+  p.putUInt("boots", bootCount);
+  uint32_t dips = p.getUInt("dips", 0), crashes = p.getUInt("crashes", 0), froze = p.getUInt("froze", 0);
+  if (r == ESP_RST_BROWNOUT || r == ESP_RST_PWR_GLITCH) p.putUInt("dips", ++dips);
+  if (r == ESP_RST_INT_WDT || r == ESP_RST_TASK_WDT || r == ESP_RST_WDT) p.putUInt("froze", ++froze);
+  if (r == ESP_RST_PANIC) {
+    p.putUInt("crashes", ++crashes);
+    esp_core_dump_summary_t *s = (esp_core_dump_summary_t *)malloc(sizeof(esp_core_dump_summary_t));
+    if (s && esp_core_dump_get_summary(s) == ESP_OK) {   // which task crashed, and where
+      char pcs[12];
+      snprintf(pcs, sizeof pcs, "%08lX", (unsigned long)s->exc_pc);
+      p.putString("ctask", s->exc_task);
+      p.putString("cpc", pcs);
+    }
+    free(s);
+    esp_core_dump_image_erase();
+  }
+  String ctask = p.getString("ctask", ""), cpc = p.getString("cpc", "");
+  p.end();
+  snprintf(bootLine, sizeof bootLine, "START %lu - %s", (unsigned long)bootCount, why);
+  snprintf(statusText, sizeof statusText, "v=1;boots=%lu;last=%s;dips=%lu;crashes=%lu;froze=%lu;ctask=%s;cpc=%s",
+           (unsigned long)bootCount, code, (unsigned long)dips, (unsigned long)crashes, (unsigned long)froze,
+           ctask.c_str(), cpc.c_str());
+  Serial.printf("Start %lu, last restart: %s (%s)\n", (unsigned long)bootCount, why, statusText);
+}
+
 // ================= screens =================
 void drawConnect() {
   gfx->fillScreen(C_BLACK);
   ring(C_DARK, 8);
-  drawFit("ROAD PUCK", 100, C_GREY, &F_SMALL);
+  drawFit(bootLine[0] ? bootLine : "ROAD PUCK", 100, C_GREY, &F_SMALL, &F_TINY);
   drawFit("CONNECT", 228, C_WHITE, &F_STATUS, &F_BIG);
   drawFit("OPEN THE PHONE APP", 292, C_WHITE, &F_ROAD, &F_ROAD_S);
   drawFit("TAP CONNECT PUCK", 350, C_AMBER, &F_ROAD_S, &F_SMALL);
+  drawFit(puckName, 410, C_GREY, &F_TINY);
+  gfx->flush();
+}
+
+void drawLost() {   // the Bluetooth link dropped (the puck did not restart)
+  gfx->fillScreen(C_BLACK);
+  ring(C_AMBER, 8);
+  drawFit(bootLine[0] ? bootLine : "ROAD PUCK", 100, C_GREY, &F_SMALL, &F_TINY);
+  drawFit("LINK LOST", 228, C_AMBER, &F_STATUS, &F_BIG);
+  drawFit("RECONNECTING", 292, C_WHITE, &F_ROAD, &F_ROAD_S);
+  drawFit("KEEP THE APP OPEN", 350, C_GREY, &F_ROAD_S, &F_SMALL);
   drawFit(puckName, 410, C_GREY, &F_TINY);
   gfx->flush();
 }
@@ -311,7 +383,16 @@ class ServerCallbacks : public BLEServerCallbacks {
   void onConnect(BLEServer *s) override { linked = true; lastMsgMs = millis(); }
   void onDisconnect(BLEServer *s) override {
     linked = false;
+    lostMs = millis();
     BLEDevice::startAdvertising();
+  }
+};
+
+class StatusCallbacks : public BLECharacteristicCallbacks {
+  void onRead(BLECharacteristic *c) override {   // restart info plus how long the puck has been running
+    char buf[200];
+    snprintf(buf, sizeof buf, "%s;up=%lu", statusText, (unsigned long)(millis() / 1000));
+    c->setValue(buf);
   }
 };
 
@@ -337,6 +418,9 @@ void startBluetooth() {
   BLECharacteristic *ch = svc->createCharacteristic(
       PUCK_ALERT_UUID, BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR);
   ch->setCallbacks(new AlertCallbacks());
+  BLECharacteristic *st = svc->createCharacteristic(PUCK_STATUS_UUID, BLECharacteristic::PROPERTY_READ);
+  st->setCallbacks(new StatusCallbacks());
+  st->setValue(statusText);
   svc->start();
   BLEAdvertising *adv = BLEDevice::getAdvertising();
   adv->setScanResponse(true);  // the phone finds the puck by name
@@ -370,7 +454,9 @@ const int DEMO_N = sizeof(DEMO) / sizeof(DEMO[0]);
 // ================= setup / loop =================
 void setup() {
   Serial.begin(115200);
+  setCpuFrequencyMhz(160);   // plenty for drawing, and less current from a weak car USB socket
   pinMode(BOOT_BTN, INPUT_PULLUP);
+  recordBoot();
   if (!gfx->begin()) {
     Serial.println("Display start failed. Check Tools > PSRAM is set to OPI PSRAM.");
   }
@@ -434,9 +520,14 @@ void loop() {
         }
       }
     }
-    if (!linked && screen != SCR_CONNECT) {
-      screen = SCR_CONNECT;
-      drawConnect();
+    if (linked) everLinked = true;
+    if (!linked) {
+      // link dropped while in use: say so (not CONNECT, which looks like a restart); after a minute, CONNECT
+      Screen want = (everLinked && now - lostMs < 60000) ? SCR_LOST : SCR_CONNECT;
+      if (screen != want) {
+        screen = want;
+        if (want == SCR_LOST) drawLost(); else drawConnect();
+      }
     } else if (linked && now - lastMsgMs > 10000 && screen != SCR_WAITING) {
       screen = SCR_WAITING;
       drawWaiting();

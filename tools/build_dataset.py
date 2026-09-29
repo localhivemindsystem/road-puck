@@ -25,6 +25,8 @@ Inputs
       cars: [wayIndex, type, whenIndex, osmWayId], type 1 no motor vehicles, 2 bus gate, 3 pedestrian zone,
       4 timed restriction (whens[whenIndex] is the OSM :conditional value).
   tools/source/osm_speed_cameras.json      speed/red-light cameras mapped in OpenStreetMap
+  tools/source/tfl_speed_limits_raw.json   TfL's London speed limit map for the test area (Speed_Limits_Feedback/FeatureServer/10,
+      "Speed_Limits_Processed_20260211"): 39,429 segments. Overrides OpenStreetMap limits where they line up.
   tools/source/tfl_yellow_boxes_raw.geojson TfL yellow box junctions (TfL_Yellow_box_junctions/FeatureServer/4)
   data/lambeth/parking_apps.json           which app pays for street bays and car parks, and how to open each app
   data/lambeth/ringgo_car_parks.json       RingGo car parks in Lambeth, copied by hand from the RingGo parking locator
@@ -219,6 +221,106 @@ def way_points(w):
     return pts
 
 
+TFL_SPEED_SRC = ROOT / "tools" / "source" / "tfl_speed_limits_raw.json"
+
+
+def _norm_name(n):
+    n = (n or "").lower().replace("'", "")
+    for a, b in ((" rd", " road"), (" st", " street"), (" ave", " avenue"), (" ln", " lane")):
+        if n.endswith(a):
+            n = n[: -len(a)] + b
+    return " ".join(n.split())
+
+
+def apply_tfl_speed_limits(src):
+    """Replace OpenStreetMap speed limits with TfL's London speed limit map where the two line up.
+
+    TfL's layer (Speed_Limits_Feedback, "Speed_Limits_Processed") combines Ordnance Survey, OpenStreetMap,
+    borough and TfL records on the OS road network, and is more up to date than OpenStreetMap (for example
+    the A23 Streatham High Road, now 20 mph). Each street in our map is sampled every ~10 m; each sample takes
+    the limit of the nearest TfL segment running the same way within 12 m (same road name preferred), and the
+    street takes the most common answer. Streets with no TfL match keep their OpenStreetMap limit.
+    """
+    if not TFL_SPEED_SRC.exists():
+        return {}
+    import math
+    from collections import Counter, defaultdict
+    t = json.loads(TFL_SPEED_SRC.read_text())
+    names = [_norm_name(n) for n in t["names"]]
+    CELL = 40.0
+    grid = defaultdict(list)
+    for lim, conf, tlrn, ni, osm, paths in t["rows"]:
+        if lim not in UK_MPH:
+            continue
+        for path in paths:
+            X = Y = 0
+            pts = []
+            for i in range(0, len(path), 2):
+                X += path[i]; Y += path[i + 1]
+                lon, lat = X / 1e6, Y / 1e6
+                pts.append(((lon - LON0) * KX, (lat - LAT0) * KY))
+            for (x1, y1), (x2, y2) in zip(pts, pts[1:]):
+                seg = (x1, y1, x2, y2, lim, names[ni])
+                for cx in range(int(math.floor(min(x1, x2) / CELL)), int(math.floor(max(x1, x2) / CELL)) + 1):
+                    for cy in range(int(math.floor(min(y1, y2) / CELL)), int(math.floor(max(y1, y2) / CELL)) + 1):
+                        grid[(cx, cy)].append(seg)
+
+    def near(x, y, brg, name):
+        best = best_named = None
+        cx, cy = int(math.floor(x / CELL)), int(math.floor(y / CELL))
+        for gx in (cx - 1, cx, cx + 1):
+            for gy in (cy - 1, cy, cy + 1):
+                for x1, y1, x2, y2, lim, nm in grid.get((gx, gy), ()):
+                    dx, dy = x2 - x1, y2 - y1
+                    L2 = dx * dx + dy * dy or 1e-9
+                    u = max(0.0, min(1.0, ((x - x1) * dx + (y - y1) * dy) / L2))
+                    d = math.hypot(x1 + u * dx - x, y1 + u * dy - y)
+                    if d > 12:
+                        continue
+                    b = math.degrees(math.atan2(dx, dy)) % 180
+                    diff = abs(b - brg) % 180
+                    if min(diff, 180 - diff) > 35:
+                        continue
+                    if best is None or d < best[0]:
+                        best = (d, lim)
+                    if name and nm == name and (best_named is None or d < best_named[0]):
+                        best_named = (d, lim)
+        if best_named:
+            return best_named[1]
+        return best[1] if best and best[0] <= 8 else None
+
+    changes = Counter()
+    matched = 0
+    for w in src["ways"]:
+        x = y = 0
+        pts = []
+        for i in range(4, len(w), 2):
+            x += w[i]; y += w[i + 1]
+            pts.append((x, y))
+        name = _norm_name(src["names"][w[1]]) if w[1] is not None and w[1] >= 0 else ""
+        votes = Counter()
+        for (x1, y1), (x2, y2) in zip(pts, pts[1:]):
+            seg = math.hypot(x2 - x1, y2 - y1)
+            if seg < 0.5:
+                continue
+            brg = math.degrees(math.atan2(x2 - x1, y2 - y1)) % 180
+            n = max(1, int(seg // 10))
+            for k in range(n):
+                f = (k + 0.5) / n
+                lim = near(x1 + (x2 - x1) * f, y1 + (y2 - y1) * f, brg, name)
+                if lim:
+                    votes[lim] += 1
+        if votes:
+            matched += 1
+            new = votes.most_common(1)[0][0]
+            if new < 20 or (w[3] and w[3] < 20):   # 5/10 mph: private and estate roads, where OpenStreetMap is better
+                continue
+            if new != w[3]:
+                changes[(w[3], new)] += 1
+                w[3] = new
+    return {"matched": matched, "changes": changes}
+
+
 def build_streets():
     src = json.loads((ROOT / "tools" / "source" / "osm_streets_v2.json").read_text())
     for w in src["ways"]:
@@ -226,8 +328,15 @@ def build_streets():
             w[3] = 20
         elif w[3] and w[3] not in UK_MPH:
             w[3] = 0
+    tfl = apply_tfl_speed_limits(src)
+    if tfl:
+        ch = tfl["changes"]
+        print(f"TfL speed limits matched {tfl['matched']} of {len(src['ways'])} streets; changed {sum(ch.values())}: "
+              + ", ".join(f"{a or '?'}->{b}: {n}" for (a, b), n in ch.most_common(8)))
     base = {k: src[k] for k in ("v", "origin", "src", "fetched", "classes", "names", "ways", "boundary")}
     base["format"] = "ways: [class, nameIndex, oneway, maxspeed_mph (0 = unknown), dx, dy, ...] metres, delta-encoded"
+    if tfl:
+        base["speed_src"] = "TfL speed limit map (Speed_Limits_Processed_20260211, fetched 2026-09-29) where matched, else OpenStreetMap"
     (ROOT / "data" / "lambeth" / "basemap.json").write_text(json.dumps(base, separators=(",", ":")))
     shutil.copy(ROOT / "data" / "lambeth" / "basemap.json", WEB / "basemap.json")
 

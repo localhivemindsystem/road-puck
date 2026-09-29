@@ -268,6 +268,17 @@ const boxes = E.loadYellowBoxes(JSON.parse(fs.readFileSync(path.join(__dirname, 
   check('Inside the box', inside.st === 'Y' && inside.detail.includes("DON'T STOP"), inside.detail);
 }
 
+// ---------- speed limits from TfL's map (OpenStreetMap was out of date) ----------
+{
+  const run = (lat, lng, hd) => { const m = E.toM(lng, lat); return E.evaluate([], { x: m[0], y: m[1], acc: 5, speed: 11, heading: hd }, MON('12:00'), { roads, mem: {} }); };
+  const sh = run(51.4232, -0.1316, 180);
+  check('Streatham High Road by Streatham Common, southbound: 20 mph (OpenStreetMap said 30)', sh.limit === 20, `limit ${sh.limit}, you ${sh.mph} mph -> over ${sh.over}`);
+  const w = roads.ways.filter(x => x.name === 'Brixton Road' && x.pts.length >= 2).sort((a, b) => Math.hypot(b.pts[1][0] - b.pts[0][0], b.pts[1][1] - b.pts[0][1]) - Math.hypot(a.pts[1][0] - a.pts[0][0], a.pts[1][1] - a.pts[0][1]))[0];
+  const mid = [(w.pts[0][0] + w.pts[1][0]) / 2, (w.pts[0][1] + w.pts[1][1]) / 2];
+  const bx = E.evaluate([], { x: mid[0], y: mid[1], acc: 5, speed: 11, heading: E.bearing(w.pts[0], w.pts[1]) }, MON('12:00'), { roads, mem: {} });
+  check('Brixton Road: 20 mph (TfL map; OpenStreetMap said 30)', bx.limit === 20, `limit ${bx.limit}`);
+}
+
 // ---------- which parking app: PayByPhone street bays, RingGo car parks ----------
 console.log('\nParking apps');
 {
